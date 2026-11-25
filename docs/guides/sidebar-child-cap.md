@@ -2,13 +2,14 @@
 title: Cap large sidebar groups
 description: Keep the sidebar short when a hub has hundreds of pages. Set the sidebar child cap per site, section or hub, and label the entry that stands for the pages.
 doc_status: active
-updated: 2026-11-23T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Guide
 kind: How-To
 tags: [sidebar, hubs, scale, configuration, consumer]
 related:
   - guides/consumer-setup
   - guides/authoring
+  - guides/paged-hub-listing
   - plans/features/large-hubs
 ---
 
@@ -29,6 +30,10 @@ that leads to the hub. The hub page lists the pages.
 
 A folder whose index page has another `kind` lists no pages, so it is never
 capped, however many pages it holds.
+
+A capped hub with more pages than its page size also splits its own listing
+across static pages, `/<hub>/page/2/` onwards. See
+[Page large hub listings](./paged-hub-listing.md).
 
 ## What a reader sees
 

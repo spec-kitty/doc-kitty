@@ -1,0 +1,250 @@
+{
+  "event_count": 57,
+  "last_event_id": "01M88TE20Q5Y7JJA0582WQFC04",
+  "materialized_at": "2026-11-25T07:41:28.983208+00:00",
+  "mission_number": "",
+  "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 7,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 0,
+    "for_review": 0,
+    "in_progress": 0,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M8785363BTDGXE3993MS3AFG",
+      "last_transition_at": "2026-11-24T17:02:46.467408+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: paging API, hub/section page size, pagination strings. Full pnpm test green (src 242/4761, mcp 23/181); lint+typecheck clean.",
+        "APPROVE (reviewer-renata). Full pnpm test green: src 242 files/4761 tests, mcp 23/181; lint and typecheck green (0 errors). Contract and boundaries hold. zod, the frontmatter gate and the section isChildCap agree on every edge (0, -1, 0.5, 1.5, \"10\", null, true, NaN, Infinity, 2^53). Mutation: 34 mutants, 30 killed, 4 survived (1 equivalent). Non-blocking: (1) the pure API does not guard pageSize, so 0 makes hubListingPages loop forever and a negative or fractional size gives wrong pages; (2) resolveHubString substitutes prototype keys ({constructor}); use Object.hasOwn; (3) test gaps: the literal 'Previous' string, an unknown {var} kept literal, and hub:{} checked with toEqual rather than toStrictEqual; (4) hubListingPages accepts an Iterable with duplicate hub keys, so the same pages are listed twice. Q4 page collision is owned by WP02 T009, as the plan says."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP01-paging-api-and-settings/review-cycle-1.md",
+        "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP01-paging-api-and-settings/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 901,
+      "shell_pid_created_at": "1795538312.29",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T006": "done"
+      }
+    },
+    "WP02": {
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M87D0GSD22ZGRWXFTV4QXDRA",
+      "last_transition_at": "2026-11-24T18:27:39.437186+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Ready for review: hub data for every hub (#429), site hub.pageSize, page collision, WP01 review folds 1-4. Full pnpm test green (src 243/4788, mcp 23/181).",
+        "Cycle-1 fix: collision checks every routed page under a paged hub, case-insensitive; shapeSidebar fast-tier test; cappedHubCaps is a deliberate public addition.",
+        "Review cycle 2 passed (lane-b 28f9a771). FR-016 fixed: the page guard checks every published routed page under a paged hub (case-insensitive); probes for nested, locale, withheld/published drafts, .mdx, README/index, odd case and odd slugs all behave; no false positives found. Mutants: 11/14 guard mutants killed; survivors M1 (hub-folder case), M14 (published-draft clash) are test gaps, M12 near-equivalent. Middleware-unfiltered mutant is killed by the build tier only (the new fast test kills the cappedHubCaps mutant, not the middleware one). Tests: src 243 files/4794 passed, mcp 23/181 passed; lint and typecheck clean. Anti-pattern checklist all PASS. Accepted deferral, carry-over to WP07: document the public export cappedHubCaps in contracts/paging-api.md and the toolkit docs. Shared files: child-cap.ts (WP01-owned) touched by WP02 for cappedHubCaps, coordinated via this note."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP02-hub-data-every-hub/review-cycle-2.md",
+        "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP02-hub-data-every-hub/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 584,
+      "shell_pid_created_at": "1795543845.42",
+      "subtasks": {
+        "T005": "done",
+        "T007": "done",
+        "T008": "done",
+        "T009": "done",
+        "T010": "done",
+        "T011": "done"
+      }
+    },
+    "WP03": {
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M87HHEZZXPG53WFW1Z9WGSA3",
+      "last_transition_at": "2026-11-24T19:46:48.959857+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Hub card list + pagination components; paged hub lists page 1; unpaged sites byte-identical incl. CSS. Full pnpm test green (src 244/4802, mcp 23/181).",
+        "Review passed (claude::reviewer-renata): example rebuilt at lane-b 2654a68f and df50a752 from one path, 0 of 659 files differ (HTML+CSS); axe WCAG 2.2 AA 0 violations on pages 1/5/9 of a 9-page probe hub in light+dark, keyboard order Prev>pages>Next with visible focus ring, targets 36px, muted contrast 6.4:1 light / 8.7:1 dark; Pagefind indexes page-1 cards only, no pagination text or CSS; inline style once per page, constant sha256-ctvdPvAJpTv0kBiIpeR7/laNSVRAnRLZFWSTe8xGihU=; paginationItems property-tested totals 1..300 (max 7 items, no single-page gap); 25 mutants, 6 survive (4 equivalent, 2 test gaps: non-integer total, n=7 at ends). pnpm test src 244 files/4802 tests + mcp 23/181 green, lint+typecheck green. Anti-pattern checklist all PASS. Non-blocking carry-overs: WP04 add count-equality guard (card missing from hub data is silently dropped) and assert aria-current/no self-link/rel/translated strings in built HTML; WP07 document the style-src hash and pin it; pageLabelPrefix drops a suffix for number-first locales; docstring says max 9 items, real max 7; HubCardList comment cites stale NFR-004."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP03-hub-page-and-pagination/review-cycle-1.md",
+        "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP03-hub-page-and-pagination/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 15282,
+      "shell_pid_created_at": "1795548035.42",
+      "subtasks": {
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
+    },
+    "WP04": {
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M87NJGTKKD62K34CT97G5E6Z",
+      "last_transition_at": "2026-11-24T20:57:17.907239+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Paged route mounted only for paged hubs; 200-child build suite; full pnpm test green (src 246/4827, mcp 23/181).",
+        "Review passed (claude::reviewer-renata): lane-d fcccc3b (code; head adds coord status merge). pnpm test src 246/4827 + mcp 23/181 green, lint+typecheck green; paged-hub-build 14 tests 42.7s serialised. Byte identity: example rebuilt from ONE path at lane-d, lane-c 92b936ac and main 5001dff: 0 of 659 files differ. Probe (200 en + 120 fr): page/2..4 and fr/page/2..3 self-canonical, each once in sitemap and Pagefind; no page/1 (spec: not built, 404), no page past last; sidebar marks hub current (en, fr); no breadcrumb component (N/A). Integration order glossary>draft-publication>route-shaping pinned by PINNED_INTEGRATION_ORDER. Mutation 15: 11 killed; survivors G5 prev/next (equivalent: Starlight finds no neighbours for the injected page), I3/I4 injection ignores withheld drafts, G4 route's assertListingAgrees call (test gaps). Anti-pattern checklist all PASS. Non-blocking carry-overs: (1) hreflang alternates and language picker on paged pages point at locale pages that are not built when locales page differently (missions/page/4 -> fr/missions/page/4 404); link gate only checks <a href>; needs operator ruling. (2) Q3 agent API, llms.txt, MCP carry no listing pages on lane-d: WP05 (lane-e 8202719) owns it; WP06 should add one cross-surface each-once test. (3) MANDATORY consolidation step: lane-d + lane-e merge with NO git conflict, so siteHubs (WP04) duplicates shapingPages+siteHubData (WP05) silently; replace siteHubs with siteHubData(options, shapingPages(options, state, new Set(state.unpublishedDirs))); WP05 also orphaned routeShapingSource's @internal JSDoc. (4) hub-cards reads cwd/docs while hub data reads options.docsDir; assertListingAgrees now fails the build loudly if a custom docsDir changes the ADR id rule. (5) route recomposes all cards and rescans the collection per listing page (O(pages x entries)); memoise if very large hubs matter. Out-of-map edits coordinated: route-shaping.ts (WP02/WP05), Hub.astro, components/hub, hub-pagination.ts (WP03), vitest.workspace.ts."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP04-paged-route/review-cycle-1.md",
+        "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP04-paged-route/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 702,
+      "shell_pid_created_at": "1795552693.36",
+      "subtasks": {
+        "T017": "done",
+        "T018": "done",
+        "T019": "done",
+        "T020": "done",
+        "T021": "done"
+      }
+    },
+    "WP05": {
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M87RNHK5MVZG3ETPTYE2J7PG",
+      "last_transition_at": "2026-11-24T21:51:22.725341+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Listing records in agent index + per-page JSON + llms.txt, DK_HUB_DATA handoff, build-id fold; full pnpm test green (src 244/4803, mcp 23/181).",
+        "Cycle-1 fixes: file handoff (E2BIG), gated listing records, golden byte identity from pre-WP05 code; full pnpm test green (src 245/4813, mcp 23/181).",
+        "Review cycle 2 APPROVED (claude::reviewer-renata). Cycle-1 issues 1-6 fixed and verified: file handoff (E2BIG test, memo, content-addressed), hubsBySlug from ranked, golden independently reproduced on lane-b 28f9a771 (path/TZ/locale independent), M5/M6/M15 killed, ordering pinned, JSDoc fixed. Item 7 deferral acceptable (injection lives on lane-d). Full pnpm test green (src 245/4813, mcp 23/181), lint 0, typecheck 0. Handoff mutants 7/10 killed; survivors H4 (fail-silent read), H6 (cosmetic subdir), H9 (pre-existing hidden dirs). Carry-overs recorded in consolidation-notes 1b (golden folds toolkitVersion; red on any version bump) and 8."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP05-agent-surfaces/review-cycle-2.md",
+        "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP05-agent-surfaces/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 29772,
+      "shell_pid_created_at": "1795556815.84",
+      "subtasks": {
+        "T022": "done",
+        "T023": "done",
+        "T024": "done",
+        "T025": "done"
+      }
+    },
+    "WP06": {
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M87YTHFC9RH3MYZZ4RNMQ15Z",
+      "last_transition_at": "2026-11-24T23:38:57.900245+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Paged listing a11y/links/assert-build/measure + full-suite folds; full pnpm test green (src 251/4864, mcp 24/185)",
+        "Review passed (reviewer-renata). Range c1e6fce..f798acd. Merge c1e6fce clean (remerge-diff: only the route-shaping conflict hunk; lane-d 456c929 and lane-e cd243e8 both ancestors). Consolidation: siteHubs deleted, setup hook = siteHubData(shapingPages(...)), mount iff listing non-empty, one hubData call site; N1 toolkitVersion mocked 0.7.1, golden shas unchanged since 561f5ea; N2/N4 [dk-hubs] read/write errors; I3/I4/H9 withheld drafts; M1/M12/M14; G4 pageCards; WP04#4 docsDir via DK_DOCS_ROOT; MCP corpus test and cross-surface test - every mutant I ran is killed. Full pnpm test green: src 251 files/4864 tests, mcp 24/185; lint and typecheck clean (0 errors). Example build: assert:artifacts PASS (index 92, sitemap 97, CSP hash matches hub and pages 2-4), no-broken-links, validate:example, validate:links pass. Playwright paged-hub spec 5 passed/3 skipped by design; axe gate 8/8; own axe run 0 violations at any impact on hub + page 2-4, light and dark. Unpaged example byte-identical to main (only main's post-base #359 changelog entry differs). Measurements reproduce (sizes exact; my rerun build +9.6%, within NFR-002's 10%). Shared files touched by consolidation (route-shaping.ts, hub-cards.ts, hub-pagination.ts, Hub.astro, paged-hub.astro, contract.ts, mcp fixture) are consolidation-mandated folds after the lane-d/e merge. Non-blocking notes go to the dispatcher."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP06-example-gates-a11y/review-cycle-1.md",
+        "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP06-example-gates-a11y/review-cycle-1.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 1117,
+      "shell_pid_created_at": "1795563368.36",
+      "subtasks": {
+        "T026": "done",
+        "T027": "done",
+        "T028": "done",
+        "T029": "done"
+      }
+    },
+    "WP07": {
+      "actor": "claude",
+      "agent": "claude::reviewer-renata",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M88TE20Q5Y7JJA0582WQFC04",
+      "last_transition_at": "2026-11-25T07:41:28.983208+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181).",
+        "Cycle 2: fold review-cycle-1 items 1-7 and the Q9 ruling",
+        "Cycle 2: review items 1-7 folded; Q9 decided (docs here, code on wip/342-locale-alternates cd1a080f); full pnpm test src 252/4873, mcp 24/185",
+        "WP07 cycle 2 APPROVED (claude::reviewer-renata). Docs feat/342 @ 145953ce, Q9 code wip/342-locale-alternates @ cd1a080f on lane-f 28ff2c81, coord 8cfdc5c8. Cycle-1 items 1-7 fixed and accurate vs lane-f; Q9 docs match the #342 ruling comment 7155320882; ADR-0089 Proposed, 0089 free on all 61 remote branches; issue matrix covers every issue the docs cite. Q9 code: real-build locale tests + 8/12 filter mutants and 3/3 hook mutants killed (survivors equivalent or cosmetic, see N2); rewrite diff is exactly the hreflang link + 2 picker options; pagination CSP hash unchanged; Pagefind indexes before the rewrite (Starlight precedes route-shaping), removed markup outside the indexed body, index hashes identical; example build byte-identical lane-f vs Q9 in one worktree. Gates on scratch merge (28ff2c81+cd1a080f+145953ce): pnpm test src 252/4873, mcp 24/185 green; lint, typecheck, validate:docs (219), links (1964), changelog (13), adr-ids (86), markdownlint 0. Non-blocking: N1 ADR-0089 title still says \"included in every surface\" (decision 5: but the feeds); N2 picker scoping to <starlight-lang-select> unpinned (whole-body mutant survives) - add a test at R24 fold; N3 dev server not rewritten (build-only, docs say so)."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP07-documentation-and-adr/review-cycle-2.md",
+        "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP07-documentation-and-adr/review-cycle-2.md",
+        "reviewer": "claude::reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 30475,
+      "shell_pid_created_at": "1795592450.36",
+      "subtasks": {
+        "T030": "done",
+        "T031": "done",
+        "T032": "done",
+        "T033": "done"
+      }
+    }
+  }
+}

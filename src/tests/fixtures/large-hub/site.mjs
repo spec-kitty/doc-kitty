@@ -88,16 +88,41 @@ export function missionChildren(count) {
  * @param {boolean} [options.hidden=false] Write every mission child with `sidebar: { hidden: true }`.
  * @param {number} [options.siteCap] The site's `sidebar.childCap`.
  * @param {number} [options.guides=10] Children of the `guides` hub (under the default cap).
+ * @param {number} [options.pageSize] The site's `hub.pageSize` (#342).
+ * @param {number} [options.hubPageSize] The `missions` hub's `hub_page_size` frontmatter (#342).
+ * @param {number} [options.hubCap] The `missions` hub's `sidebar_child_cap` frontmatter.
+ * @param {boolean} [options.customSidebar=false] Hand Starlight a consumer sidebar, so the toolkit does not shape it.
+ * @param {number} [options.fr=0] Children of a translated `fr/missions` hub; adds the `fr` locale (#342, FR-018).
+ * @param {boolean} [options.pageChild=false] Add `missions/page.md`, a child whose route a paged hub's listing needs (FR-016).
  */
-export function siteFiles({ missions = 0, hidden = false, siteCap, guides = 10 } = {}) {
-  const sidebar = siteCap === undefined ? '' : `, sidebar: { childCap: ${siteCap} }`;
+export function siteFiles({
+  missions = 0,
+  hidden = false,
+  siteCap,
+  guides = 10,
+  pageSize,
+  hubPageSize,
+  hubCap,
+  customSidebar = false,
+  fr = 0,
+  pageChild = false,
+} = {}) {
+  const sidebar = customSidebar
+    ? `, sidebar: [{ label: 'Guides', items: [{ autogenerate: { directory: 'guides' } }] }, { label: 'Missions', link: '/missions/' }]`
+    : siteCap === undefined
+      ? ''
+      : `, sidebar: { childCap: ${siteCap} }`;
+  const hub = pageSize === undefined ? '' : `, hub: { pageSize: ${pageSize} }`;
+  const locales = fr
+    ? `, starlight: { defaultLocale: 'root', locales: { root: { label: 'English', lang: 'en' }, fr: { label: 'Français', lang: 'fr' } } }`
+    : '';
   const files = {
     'astro.config.mjs': `import { defineConfig } from 'astro/config';
 import { defineDocKittyIntegrations } from '@spec-kitty/doc-toolkit/config';
 export default defineConfig({
   site: 'https://example.test',
   base: '${BASE}',
-  integrations: defineDocKittyIntegrations({ title: 'Large hub fixture', base: '${BASE}'${sidebar} }),
+  integrations: defineDocKittyIntegrations({ title: 'Large hub fixture', base: '${BASE}'${sidebar}${hub}${locales} }),
 });
 `,
     'src/content.config.ts': `import { defineCollection } from 'astro:content';
@@ -113,6 +138,20 @@ ${missions ? '  - id: missions\n    label: Missions\n    order: 20\n' : ''}  - i
     label: Ops
     order: 30
 `,
+    ...(fr
+      ? {
+          'src/content.config.ts': `import { defineCollection } from 'astro:content';
+import { docsLoader, i18nLoader } from '@astrojs/starlight/loaders';
+import { i18nSchema } from '@astrojs/starlight/schema';
+import { docKittyDocsLoader, docKittyDocsSchema } from '@spec-kitty/doc-toolkit/schema';
+export const collections = {
+  docs: defineCollection({ loader: docKittyDocsLoader({ base: 'docs' }), schema: docKittyDocsSchema() }),
+  i18n: defineCollection({ loader: i18nLoader(), schema: i18nSchema() }),
+};
+`,
+          'src/content/i18n/fr.json': `${JSON.stringify({ 'dockitty.hub.pagination.label': 'Pagination (fr)', 'dockitty.hub.pagination.next': 'Suivant' }, null, 2)}\n`,
+        }
+      : {}),
     'docs/README.md': page('Large hub fixture', 'Hub'),
     'docs/guides/README.md': page('Guides', 'Hub'),
     'docs/ops/README.md': page('Ops', 'Hub'),
@@ -120,9 +159,16 @@ ${missions ? '  - id: missions\n    label: Missions\n    order: 20\n' : ''}  - i
   };
   for (let i = 1; i <= guides; i += 1) files[`docs/guides/guide-${pad(i)}.md`] = page(`Guide ${pad(i)}`, 'How-To');
   if (missions) {
-    files['docs/missions/README.md'] = page('Missions', 'Hub');
+    const hubExtra = `${hubCap === undefined ? '' : `sidebar_child_cap: ${hubCap}\n`}${hubPageSize === undefined ? '' : `hub_page_size: ${hubPageSize}\n`}`;
+    files['docs/missions/README.md'] = page('Missions', 'Hub', { extra: hubExtra });
+    if (pageChild) files['docs/missions/page.md'] = page('Page', 'Explanation');
     const extra = hidden ? 'sidebar:\n  hidden: true\n' : '';
     for (const { slug, title } of missionChildren(missions)) files[`docs/${slug}.md`] = page(title, 'Explanation', { extra });
+  }
+  if (fr) {
+    files['docs/fr/README.md'] = page('Accueil', 'Hub');
+    files['docs/fr/missions/README.md'] = page('Missions (fr)', 'Hub');
+    for (const { slug, title } of missionChildren(fr)) files[`docs/fr/${slug}.md`] = page(`${title} (fr)`, 'Explanation');
   }
   return files;
 }

@@ -22,7 +22,10 @@ import {
   MCP_BUILD_FROM_SOURCE_URL,
   mcpLaunchUsage,
   openApiStampConfig,
+  pagedHubListing,
+  readHubData,
 } from './shared.js';
+import { DEFAULT_HUB_PAGE_SIZE, HUB_PAGINATION_KEYS, resolveHubString, type HubCap, type HubListingPage } from '../child-cap.js';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
 import { servedSurfaces } from '../served-surfaces.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
@@ -159,6 +162,68 @@ export interface OpenApiRecordEntry extends AgentRecordEntry {
   rawDocumentUrl: string;
   sha256: string;
 }
+
+/**
+ * One listing page of a paged hub (#342), as the agent surfaces describe it: a
+ * record in the `AgentRecordEntry` shape (so MCP corpus guards accept it) with
+ * `kind: "Listing"`, the hub it lists (`listing_of`), its page number and the
+ * hub's page count. Its `section`, `type` and `doc_status` are the hub's own
+ * (research R5: navigation, not content, so it is never ranked among the docs).
+ */
+export interface ListingRecord {
+  slug: string;
+  route: string;
+  section: string;
+  title: string;
+  description: string;
+  type: string | null;
+  doc_status: string;
+  kind: 'Listing';
+  tags: string[];
+  priority: number;
+  updated: null;
+  listing_of: string;
+  page: number;
+  of: number;
+}
+
+/**
+ * Project one listing page into its record. The title is the hub title with the
+ * page (`dockitty.hub.pagination.title`, English: the agent surfaces are not
+ * localised); the description names the slice of the hub's children it lists.
+ */
+export function toListingRecord(
+  page: HubListingPage,
+  hub: { title: string; type: string | null; doc_status: string },
+  data: Pick<HubCap, 'count' | 'pageSize'>,
+): ListingRecord {
+  const count = data.count;
+  return {
+    slug: page.slug,
+    route: routeOfSlug(page.slug),
+    section: sectionOf(page.hub),
+    title: resolveHubString(HUB_PAGINATION_KEYS.title, { title: hub.title, page: page.page }),
+    description: `Children ${listingRange(page, data)} of ${count} of the ${hub.title} hub.`,
+    type: hub.type,
+    doc_status: hub.doc_status,
+    kind: 'Listing',
+    tags: [],
+    priority: DEFAULT_AGENT_PRIORITY,
+    updated: null,
+    listing_of: page.hub,
+    page: page.page,
+    of: page.of,
+  };
+}
+
+/** `51–100`: the 1-based positions of a listing page's children in its hub. */
+export function listingRange(page: HubListingPage, data: Pick<HubCap, 'pageSize'>): string {
+  const first = (page.page - 1) * (data.pageSize ?? DEFAULT_HUB_PAGE_SIZE);
+  return `${first + 1}–${first + page.children.length}`;
+}
+
+/** The synthetic index record of a listing page: an `AgentRecordEntry` plus the listing fields. */
+export type ListingRecordEntry = Omit<AgentRecordEntry, keyof ListingRecord> & ListingRecord;
 
 /**
  * The surfaces the index declares, after detection defaults and the caller's
@@ -303,6 +368,34 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
         _links: recordLinks(declared, url, source, relatedLinks),
       };
     });
+
+    // #342: one synthetic record per listing page from 2 on of every paged hub,
+    // APPENDED after the docs records and before the OpenAPI records, never ranked
+    // among the docs (research R5). Gated by the hub's section `agent` feed, like
+    // the hub itself. No paged hub (or no hub data) appends nothing, so the index
+    // stays byte-identical; the build id above folds the listing in.
+    // From the GATED set: a hub the index leaves out (feeds, or its own
+    // `agent.discoverable: false`) lists no pages either, as in llms.txt (review cycle 1).
+    const hubsBySlug = new Map(ranked.map((entry) => [entry.slug, entry]));
+    const hubData = new Map(readHubData());
+    for (const page of pagedHubListing()) {
+      if (!feedsSurface(feeds, sectionOf(page.hub), 'agent')) continue;
+      const hubEntry = hubsBySlug.get(page.hub);
+      const data = hubData.get(page.hub);
+      if (!hubEntry || !data) continue;
+      const record = toListingRecord(page, toAgentRecord(hubEntry), data);
+      const url = absolute(site, record.route);
+      const source = absolute(site, `/api/pages/${record.slug}.json`);
+      const entry: ListingRecordEntry = {
+        ...record,
+        related: [],
+        audience: [],
+        url,
+        source,
+        _links: recordLinks(declared, url, source, []),
+      };
+      pages.push(entry as unknown as AgentRecordEntry);
+    }
 
     // WP03 (mission openapi-second-slice-01M6WXJ4): one synthetic record per
     // OpenAPI spec version, APPENDED after the docs records — never ranked

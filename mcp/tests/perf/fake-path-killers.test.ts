@@ -96,7 +96,7 @@ describe('FR-002 control: fs mode opens zero sockets with network tripwired', ()
       });
       expect(code, io.err.join('\n')).toBe(0);
       // 70 docs pages + the 3 synthetic OpenAPI version records (WP03).
-      expect(served?.snapshot.pages.length).toBe(73);
+      expect(served?.snapshot.pages.length).toBe(92);
       // The whole load happened with the traps armed and bit NOTHING new.
       expect(hits).toHaveLength(hitsAfterSelfCheck);
     } finally {

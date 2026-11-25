@@ -1,0 +1,33 @@
+{
+  "slug": "guides/paged-hub",
+  "route": "/guides/paged-hub/",
+  "section": "guides",
+  "title": "Paged hub",
+  "description": "A hub over its sidebar child cap that lists its pages two at a time, with a pagination below the list.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Paged hub\n\nThis hub has seven pages, a sidebar child cap of 3 and a page size of 2, set\nwith `sidebar_child_cap: 3` and `hub_page_size: 2` in this page's frontmatter.\nSeven is more than three, so the sidebar shows one \"7 pages\" entry, and seven\nis more than two, so this page lists its first two pages and the rest follow on\nlisting pages 2, 3 and 4.\n\nUse the pagination below the list to move between the listing pages. Each one\nis a page of its own, at `/guides/paged-hub/page/2/` and so on.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/"
+    },
+    "related": []
+  }
+}

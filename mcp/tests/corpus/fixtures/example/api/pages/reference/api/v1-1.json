@@ -4,7 +4,7 @@
   "section": "reference",
   "title": "Shipping API v1-1",
   "description": "OpenAPI 1.1.0 contract, 3 operations",
-  "type": "reference",
+  "type": "Reference",
   "doc_status": "active",
   "kind": "Reference",
   "tags": [
@@ -26,7 +26,7 @@
     "List parcels"
   ],
   "markdown": "# Shipping API v1-1\n\n- Released: yes\n- API version: 1.1.0\n- Raw document: /doc-kitty/reference/api/v1-1/openapi.yaml\n- sha256: 068383373bd07876d1f9c26466c900eee53ccd1bceef5cd23d26e8d0a296c8d7\n\n## Operations\n\n- GET /parcels: List parcels\n- POST /parcels: Create a parcel\n- GET /parcels/{parcelId}: Get a parcel\n",
-  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/reference/api/v1-1.json"

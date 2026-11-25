@@ -1,0 +1,33 @@
+{
+  "slug": "guides/capped-hub/where-the-cap-is-set",
+  "route": "/guides/capped-hub/where-the-cap-is-set/",
+  "section": "guides",
+  "title": "Where the cap is set",
+  "description": "The cap is read from the hub, then its section, then the site.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-23T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/where-the-cap-is-set.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/where-the-cap-is-set/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Where the cap is set\n\nThe most specific setting wins:\n\n1. the hub's own `sidebar_child_cap` frontmatter, as on this example's hub;\n2. `sidebar.childCap` on the section in `docs/_meta/sections.yaml`, or in the\n   charter's `sections.entries`;\n3. `sidebar.childCap` in `defineDocKittyIntegrations`;\n4. the default, 50.\n\nA cap is a positive whole number. Any other value stops the build with a\nmessage that names the setting.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/where-the-cap-is-set.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/where-the-cap-is-set/"
+    },
+    "related": []
+  }
+}

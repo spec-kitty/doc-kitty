@@ -172,9 +172,12 @@ describe('resource identity (canonical slug rule)', () => {
       expect(firstList).toEqual(secondList);
       expect(firstList.resources.length).toBeGreaterThan(0);
 
-      // The contract pins exactly one page-identity form: /pages/, plural.
+      // The contract pins exactly one page-identity form: /pages/, plural. The
+      // check is on the identity prefix: a paged hub listing (#342) has its own
+      // `page/N` path segment after it (`/pages/guides/paged-hub/page/2`).
       const uris = (firstList.resources as Array<{ uri: string }>).map((r) => r.uri);
-      expect(uris.some((u) => /\/page\//.test(u))).toBe(false);
+      expect(uris.some((u) => u.startsWith(`docs://${SLUG}/page/`))).toBe(false);
+      expect(uris.every((u) => u.startsWith(`docs://${SLUG}/pages/`) || !u.includes('/pages/'))).toBe(true);
     } finally {
       await first.client.close();
       await second.client.close();

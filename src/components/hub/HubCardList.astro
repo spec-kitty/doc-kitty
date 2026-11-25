@@ -1,0 +1,65 @@
+---
+/*
+ * DocKitty: the hub card list (#342, WP03), extracted verbatim from `Hub.astro`
+ * so the hub page and the paged listing pages (`/<hub>/page/N/`) render the same
+ * cards. Unpaged hubs render byte-identical markup: no scoped styles here, the
+ * card classes are the global ones in styles/hub.css.
+ *
+ * Search coverage vs. the navigation landmark: the list is a
+ * `section[role=navigation]`, not a `<nav>`, because Pagefind skips the `<nav>`
+ * tag and the card text must stay indexed (see Hub.astro for the full record).
+ */
+import type { HubCard } from '../../lib/hub-pagination.js';
+
+interface Props {
+  cards: HubCard[];
+  navLabel: string;
+  hrefFor: (slug: string) => string;
+}
+
+const { cards: children, navLabel, hrefFor } = Astro.props;
+---
+
+{
+  children.length > 0 && (
+    <section class="dk-hub" role="navigation" aria-label={navLabel}>
+      <ul class="dk-hub__list" role="list">
+        {children.map((child) => (
+          <li class="dk-hub__item">
+            <a class="dk-hub__card" href={hrefFor(child.slug)}>
+              <span class="dk-hub__title">{child.title}</span>
+              {/* Explicit spaces: adjacent inline spans render glued, which
+                  would merge title/kind/status/description into one Pagefind token
+                  and hurt search recall on the title word (NFR-004). */}
+              {child.kind && (
+                <>{' '}<span class="dk-hub__kind">{child.kind}</span></>
+              )}
+              {/* ADR-only: lifecycle status badge + date. The status token comes
+                  from the shared extractor; empty/unparseable ⇒ unbadged (never
+                  breaks the hub, T019). The word itself carries the meaning —
+                  colour is only reinforcement (never colour-only), so it stays
+                  legible in both themes. */}
+              {child.status && (
+                <>{' '}<span class="dk-hub__badge" data-adr-status={child.status.toLowerCase()}>{child.status}</span></>
+              )}
+              {child.date && (
+                <>{' '}<span class="dk-hub__date">{child.date}</span></>
+              )}
+              {child.description && (
+                <>{' '}<span class="dk-hub__desc">{child.description}</span></>
+              )}
+            </a>
+            {/* A deck child also gets its `?print-pdf` export link, auto-derived
+                from the collection — a sibling of the card-wide anchor, not a
+                nested one (FR-014). Only decks (kind: Presentation) have one. */}
+            {child.kind === 'Presentation' && (
+              <a class="dk-hub__aux" href={`${hrefFor(child.slug)}?print-pdf`}>
+                Print / PDF export
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

@@ -33,6 +33,7 @@
     "./config": "./lib/config.ts",
     "./schema": "./lib/schema.ts",
     "./routes": "./lib/routes/index.ts",
+    "./routes/paged-hub": "./lib/routes/paged-hub.astro",
     "./routes/scenario-index-injected": "./lib/routes/scenario-index-injected.ts",
     "./routes/content-graph-injected": "./lib/routes/content-graph-injected.ts",
     "./routes/page-atom-injected": "./lib/routes/page-atom-injected.ts",

@@ -1,0 +1,48 @@
+{
+  "slug": "guides/paged-hub/page/3",
+  "route": "/guides/paged-hub/page/3/",
+  "section": "guides",
+  "title": "Paged hub, page 3",
+  "description": "Children 5–6 of 7 of the Paged hub hub.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Listing",
+  "tags": [],
+  "priority": 0.5,
+  "updated": null,
+  "listing_of": "guides/paged-hub",
+  "page": 3,
+  "of": 4,
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/3.json",
+  "related": [],
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/3/",
+  "authors": [],
+  "keywords": [],
+  "children": [
+    {
+      "slug": "guides/paged-hub/search",
+      "title": "Search",
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/"
+    },
+    {
+      "slug": "guides/paged-hub/translating-the-pagination",
+      "title": "Translating the pagination",
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/"
+    }
+  ],
+  "markdown": "- [Search](https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/)\n- [Translating the pagination](https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/)\n",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/3.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/3/"
+    },
+    "related": []
+  }
+}

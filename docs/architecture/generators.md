@@ -2,7 +2,7 @@
 title: Generators
 description: The generated discovery surfaces (sitemap-index.xml, rss.xml, llms.txt, and the JSON agent-API) plus the advisory MCP wiring pointer, and their route handlers.
 doc_status: draft
-updated: 2026-11-21T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Architecture
 kind: Reference
 tags: [generators, sitemap, rss, llms-txt, agent-api]
@@ -40,13 +40,21 @@ short endpoint file. This page expands the surfaces the
   `llmsTxtRoute` handler; how the `agent` block filters and orders entries within a
   group. Each section group also emits a **blurb line** = the section `README`
   description **??** the registry `purpose` (README wins; a section with neither
-  emits no blurb line).
+  emits no blurb line). A paged hub ([Page large hub listings](../guides/paged-hub-listing.md))
+  adds one line per listing page right after its own line:
+  `- [<Hub>, page N](<url>): children A–B of C`.
 - **The agent-API** — `agentIndexRoute` and `agentPageRoute`:
   - `/api/index.json` — a browsable, structured map of the corpus, sections in
     registry order.
   - `/api/pages/<id>.json` — one page's metadata plus its raw Markdown. A
     `::gherkin` include is expanded into the scenarios it renders and listed
     under `includes` ([ADR-0051](../adr/0051-gherkin-in-any-page.md)).
+  - Listing pages of a paged hub ([ADR-0089](../adr/0089-paged-hub-listing.md)):
+    `/api/index.json` holds one `kind: "Listing"` record per listing page from 2
+    on, with `listing_of` (the hub), `page` and `of` (the page count), after the
+    docs records and before the OpenAPI records. A hub the index leaves out has
+    none. `/api/pages/<hub>/page/<n>.json` adds `children` (slug, title, URL of
+    each page it lists) and a Markdown list of them. No child is listed twice.
   - `/api/scenarios.json` (`scenarioIndexRoute`, only on sites with Gherkin
     feature pages) — every published generated feature page with its scenarios:
     rule, heading anchor, tags, steps and Examples. `llms.txt` advertises it only

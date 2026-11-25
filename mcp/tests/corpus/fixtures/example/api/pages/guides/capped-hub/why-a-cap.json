@@ -1,0 +1,33 @@
+{
+  "slug": "guides/capped-hub/why-a-cap",
+  "route": "/guides/capped-hub/why-a-cap/",
+  "section": "guides",
+  "title": "Why a cap",
+  "description": "A section with hundreds of pages puts hundreds of links in every page's sidebar.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-23T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/why-a-cap.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/why-a-cap/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Why a cap\n\nStarlight lists every page of a folder in the sidebar of every page. For a\nfolder with a few pages that is what a reader wants. For a folder with hundreds\nof generated pages, every page of the site carries hundreds of links, and the\nbuild renders them again for every page.\n\nA hub over its cap keeps its overview link and one entry that leads to the hub,\nwhere the pages are listed.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/why-a-cap.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/why-a-cap/"
+    },
+    "related": []
+  }
+}

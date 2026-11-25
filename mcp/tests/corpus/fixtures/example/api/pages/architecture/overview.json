@@ -21,14 +21,14 @@
     }
   ],
   "priority": 0.5,
-  "updated": "2026-10-14T00:00:00Z",
+  "updated": "2026-11-10T00:00:00Z",
   "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/overview.json",
   "audience": [],
   "url": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
   "authors": [],
   "keywords": [],
-  "markdown": "# Overview\n\nThe site is a static Astro + Starlight build driven entirely by the `docs/`\ntree.\n\n```mermaid\n%% title: Build pipeline\n%% description: The docs/ tree feeds the toolkit loader, which fans out to Starlight, the sitemap, RSS, llms.txt, and the agent-API, then Starlight emits the static site.\nflowchart LR\n  D[docs/**  README-as-index + frontmatter] --> L[toolkit loader]\n  L --> S[Starlight  nav / search / theme]\n  L --> M[sitemap-index.xml]\n  L --> R[rss.xml]\n  L --> T[llms.txt]\n  L --> A[\"/api/*.json  agent-API\"]\n  S --> H[dist/  static HTML]\n```\n\n## Key properties\n\n- **Static** — no server; everything renders at build time.\n- **Metadata-driven** — nav, feeds, and the agent-API all read from frontmatter.\n- **Convention-first** — the `docs/` tree is a valid OKF bundle.\n\nSee the toolkit's own architecture docs for the internals.",
-  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
+  "markdown": "# Overview\n\nThe site is a static Astro + Starlight build driven entirely by the `docs/`\ntree.\n\n```mermaid\n%% title: Build pipeline\n%% description: The docs/ tree feeds the toolkit loader, which fans out to Starlight, the sitemap, RSS, llms.txt, and the agent-API, then Starlight emits the static site.\nflowchart LR\n  D[docs/**  README-as-index + frontmatter] --> L[toolkit loader]\n  L --> S[Starlight  nav / search / theme]\n  L --> M[sitemap-index.xml]\n  L --> R[rss.xml]\n  L --> T[llms.txt]\n  L --> A[\"/api/*.json  agent-API\"]\n  S --> H[dist/  static HTML]\n```\n\n## Page metadata model\n\nEvery page carries the same frontmatter, and its section comes from the\nsection registry.\n\n```mermaid\n%% title: Page metadata model\n%% description: A section holds many pages; each page carries one frontmatter block and may relate to other pages.\nerDiagram\n  SECTION ||--o{ PAGE : holds\n  PAGE ||--|| FRONTMATTER : carries\n  PAGE }o--o{ PAGE : relates_to\n  FRONTMATTER {\n    string title\n    string description\n    string doc_status\n    datetime updated\n    string kind\n  }\n```\n\n## Key properties\n\n- **Static** — no server; everything renders at build time.\n- **Metadata-driven** — nav, feeds, and the agent-API all read from frontmatter.\n- **Convention-first** — the `docs/` tree is a valid OKF bundle.\n\nSee the toolkit's own architecture docs for the internals.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/overview.json"

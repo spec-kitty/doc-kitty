@@ -1,0 +1,33 @@
+{
+  "slug": "guides/paged-hub/listing-page-urls",
+  "route": "/guides/paged-hub/listing-page-urls/",
+  "section": "guides",
+  "title": "Listing page URLs",
+  "description": "Listing page N of a hub is at /<hub>/page/N/, from 2 up; page 1 is the hub itself.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Reference",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/listing-page-urls.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/listing-page-urls/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Listing page URLs\n\nPage 1 is the hub page. Listing page N, from 2 up, is at\n`/<hub>/page/N/`. No page 1 URL is built, and no page past the last.\n\nEach listing page is its own canonical URL. It sits in the site frame with the\nsidebar, shows the hub's title with its page number, and has no previous or\nnext links: the pagination takes their place.\n\nBecause these URLs are taken, a paged hub may not have a child named `page`.\nThe build stops and names the hub and the child.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/listing-page-urls.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/listing-page-urls/"
+    },
+    "related": []
+  }
+}

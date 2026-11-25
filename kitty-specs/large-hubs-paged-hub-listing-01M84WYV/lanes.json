@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
+  "mission_id": "01M84WYVDYWGBH777TED2ZYGC8",
+  "mission_branch": "kitty/mission-large-hubs-paged-hub-listing-01M84WYV",
+  "target_branch": "feat/342-paged-hub-listing",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/child-cap.ts",
+        "src/lib/i18n-plugin.ts",
+        "src/lib/schema.ts",
+        "src/lib/sections.ts",
+        "src/scripts/validate-frontmatter.mjs",
+        "src/tests/child-cap.test.ts",
+        "src/tests/hub-page-size-settings.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/integrations/route-shaping.ts",
+        "src/lib/openapi/route-middleware.ts",
+        "src/lib/route-middleware.ts",
+        "src/lib/route-shaping-module.d.ts",
+        "src/tests/hub-caps-data.test.ts",
+        "src/tests/hub-data-every-hub.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/components/hub/HubCardList.astro",
+        "src/components/hub/HubPagination.astro",
+        "src/layouts/Hub.astro",
+        "src/lib/hub-pagination.ts",
+        "src/styles/hub.css",
+        "src/tests/hub-pagination.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/lib/routes/agent-index.ts",
+        "src/lib/routes/agent-page.ts",
+        "src/lib/routes/llms-txt.ts",
+        "src/lib/routes/shared.ts",
+        "src/tests/agent-listing-records.test.ts",
+        "src/tests/llms-paged-hubs.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/integrations/paged-hubs.ts",
+        "src/lib/routes/paged-hub.astro",
+        "src/package.json",
+        "src/tests/fixtures/large-hub/site.mjs",
+        "src/tests/paged-hub-build.test.ts",
+        "src/tests/paged-hubs-integration.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "docs/plans/features/large-hubs.md",
+        "example/docs/guides/paged-hub/**",
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/tests/fixtures/large-hub/measure.mjs",
+        "src/tests/no-broken-links-pagination.test.ts",
+        "tests/a11y/paged-hub-listing.spec.ts",
+        "tests/a11y/routes.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "docs/adr/0086-paged-hub-listing.md",
+        "docs/architecture/generators.md",
+        "docs/changelog/unreleased/342-paged-hub-listing.md",
+        "docs/guides/authoring.md",
+        "docs/guides/consumer-setup.md",
+        "docs/guides/paged-hub-listing.md",
+        "docs/guides/sidebar-child-cap.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-d",
+        "lane-e"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-24T16:00:30.262439+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP07"
+  ],
+  "planning_commit_sha": "5001dff4f20f50f6582d6ebef2860ecdea34372e"
+}

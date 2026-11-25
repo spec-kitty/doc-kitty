@@ -132,6 +132,16 @@ export interface AgentRecordEntry {
    * document bytes, 64 lowercase hex. Additive within major "3".
    */
   sha256?: string;
+  /**
+   * Present only on the paged hub listing's records (#342, `kind: "Listing"`):
+   * the hub folder the listing page lists, e.g. `missions`. Additive within
+   * major "3"; docs records never carry it.
+   */
+  listing_of?: string;
+  /** Present only on listing records (#342): this listing page's number, 2 or more. */
+  page?: number;
+  /** Present only on listing records (#342): the hub's listing page count. */
+  of?: number;
   _links: AgentRecordLinks;
 }
 
@@ -228,6 +238,13 @@ export interface AgentPageMeasure {
  * (`generated`/`verified`/`sources` follow the frontmatter; `includes` only
  * when the page carries at least one `::gherkin` include).
  */
+/** One child on a listing page's artifact (#342): its slug, title and absolute URL. */
+export interface ListingChild {
+  slug: string;
+  title: string;
+  url: string;
+}
+
 export interface AgentPagePayload {
   slug: string;
   route: string;
@@ -271,6 +288,21 @@ export interface AgentPagePayload {
    * document bytes, 64 lowercase hex. Additive within major "3".
    */
   sha256?: string;
+  /**
+   * Present only on the paged hub listing's records (#342, `kind: "Listing"`):
+   * the hub folder the listing page lists, e.g. `missions`. Additive within
+   * major "3"; docs records never carry it.
+   */
+  listing_of?: string;
+  /** Present only on listing records (#342): this listing page's number, 2 or more. */
+  page?: number;
+  /** Present only on listing records (#342): the hub's listing page count. */
+  of?: number;
+  /**
+   * Present only on listing pages (#342): the children this listing page shows,
+   * in the hub's order. Each child keeps its own page artifact.
+   */
+  children?: ListingChild[];
   /** Raw Markdown source with every `::gherkin` include expanded. */
   markdown: string;
   /** The build identity; equal to the index's `buildId` of the same build. */

@@ -1,0 +1,137 @@
+# Consolidation notes: large-hubs-paged-hub-listing-01M84WYV
+
+Carry-overs from reviews that must be done at or before consolidation. They are
+not part of any WP's approved scope, so each lands as a fold after the lanes
+merge, red first where a test is named, with the full `pnpm test` before the
+hand-off.
+
+## Mandatory
+
+1. **One hub-data computation (WP04 review, item 3).** Lanes d (WP04) and e
+   (WP05) merge with no git conflict, so nothing prompts this. WP04's `siteHubs`
+   in `src/lib/integrations/route-shaping.ts` duplicates WP05's `shapingPages` +
+   `siteHubData`. Fix:
+   - make the `astro:config:setup` hook call
+     `siteHubData(options, shapingPages(options, state, new Set(state.unpublishedDirs)))`
+     and delete `siteHubs`;
+   - move WP05's helpers out from between `routeShapingSource`'s `@internal`
+     JSDoc and the function, so that comment is not orphaned;
+   - add a test that fails if two hub-data computations exist.
+   - add a test that the route is injected iff `pagedHubListing()` (the
+     handoff's listing) is non-empty, so the mount and the agent surfaces agree
+     (WP05 review cycle 1, item 7). With WP05's file handoff (`DK_HUB_DATA` is a
+     path since cycle 1), the setup hook computes the data; consider writing the
+     handoff there too and dropping the separate `config:done` computation.
+1b. **Pin the toolkit version in WP05's golden (WP05 review cycle 2, N1).**
+   `src/tests/llms-paged-hubs.test.ts` pins shas that fold `toolkitVersion()`
+   (`src/package.json` version, now 0.7.1) into the build id. Any version bump
+   turns all three T025 cases red (verified: 0.7.2 gives 3 failures). Mock
+   `../lib/generator-stamp.mjs` `toolkitVersion` to `'0.7.1'` in that test so the
+   lane-b golden stays meaningful. Do not re-bake the shas from current code.
+
+## Before or with WP06 / WP07
+
+2a. An MCP-side build-fixture test (WP06) that loads a paged corpus, modelled on
+    `mcp/tests/corpus/openapi-entries.test.ts` (WP05 review cycle 1).
+2. A cross-surface test (WP06): every listing URL appears exactly once in the
+   sitemap, Pagefind, `/api/index.json`, `/api/pages`, `llms.txt` and the MCP
+   listing; children are never duplicated.
+3. `hub-cards.ts` reads `cwd/docs` while the hub data reads `options.docsDir`. A
+   paged hub with a custom `docsDir` fails `assertListingAgrees`. Make
+   `composeHubCards` take the docs root; test with a custom `docsDir`.
+4. Test gaps (surviving mutants): the injection condition with withheld drafts
+   (I3/I4); the route's `assertListingAgrees` call (G4). From WP02: an upper-case
+   hub folder clash (M1), a published draft in a drafts-on build (M14), sort the
+   clash so the message names a deterministic page (M12).
+5. Optional: memoise card composition per hub in the route (today O(pages ×
+   entries)).
+6. WP07: `cappedHubCaps` row in `contracts/paging-api.md` and the docs; the
+   pagination inline-style `style-src` hash, computed from the final build and
+   pinned by a build assertion (the reviewer's recorded hash predates WP04's
+   focus-ring fold).
+7. PR body: a page with Starlight `draft: true` and `doc_status: active` is not
+   routed in production yet trips the `page` guard (deliberate fail-loud).
+
+8. WP05 review cycle 2 test gaps (surviving mutants):
+   - H4: `readHubData` turning a missing or corrupt handoff file into `[]` survives.
+     Pin today's fail-loud throw, and wrap it in a `[dk-hubs]` message that names
+     `DK_HUB_DATA` and says to rerun the build. The raw error is ENOENT or a
+     SyntaxError.
+   - H9: the `config:done` handoff ignoring `state.unpublishedDirs` survives,
+     because the handoff test uses no withheld draft directory. This goes with
+     item 4 (I3/I4).
+   - Note only: nothing prunes `<cacheDir>/doc-kitty-hubs/*.hubs.json`, the same
+     as the `DK_OPENAPI` publication precedent. A failed cache write reports
+     with the `[dk-openapi]` prefix (`writeCacheAtomic`).
+
+## WP06 review carry-overs (approved at lane-f 28ff2c81; fold at R24)
+
+- (a) The hub data handoff read error names `DK_HUB_DATA` and says to rerun the build.
+- (b) The setup hook comment says the hub data is computed once; the virtual
+  module still calls `siteHubData` again. Fix the comment, or serve the
+  module's `hubCaps` from the handoff.
+- (c) A test that the listing route calls `pageCards` (G4 at the route level).
+- (d) PR body: quote the NFR-002 build-time spread (recorded +5%, reviewer rerun
+  +9.6%, budget 10%).
+- (e) WP07: the guide carries the pinned pagination CSP hash and documents the
+  listing contract fields (`listing_of`, `page`, `of`, `children`,
+  `ListingChild`). Checked: the guide at bda45d6e has neither.
+- (f) Issue-matrix rows for #359 and #402 (the ADR-number mentions at research.md:90).
+- (g) PR body: listing pages are absent from RSS and Atom by design.
+- (h) The Playwright focus-ring assertion must not pass on the UA default outline.
+- (i) Trailers in the final PR history: resolved by the dispatcher. The original
+  brief applies: keep `Co-Authored-By: Claude <noreply@anthropic.com>` and
+  `Claude-Session`; strip only trailers that name a model.
+
+## MANDATORY at R24: fold the Q9 locale-alternates code
+
+The operator's ruling of 2026-11-25 (recorded on #342, comment 7155320882): on a
+listing page, hreflang links and language-picker options name only built locale
+listing pages. The code is on `wip/342-locale-alternates` @ cd1a080f, based on
+lane-f 28ff2c81, and is reviewed in WP07 cycle 2 (option B: WP07 carries the
+docs only, so no lane history is merged into the target before consolidate).
+At R24, bring cd1a080f onto the clean branch with its review evidence:
+`src/lib/listing-alternates.ts`, the `astro:build:done` rewrite in
+`src/lib/integrations/route-shaping.ts`, `src/tests/listing-alternates.test.ts`
+and the two locale tests in `src/tests/paged-hub-build.test.ts`.
+
+## Held for the operator (resolved)
+
+- RESOLVED 2026-11-25, drop the missing alternates (see the MANDATORY item above).
+  Locales with different page counts: a listing page's hreflang alternates and
+  the language picker point at listing pages that were never built (for example,
+  `missions/page/4` links to `fr/missions/page/4`). The dispatcher asked the
+  operator whether to build fallback listing pages or suppress those alternates.
+  Do not change until the operator rules.
+
+## R24 pre-merge adversarial squad (2026-11-25)
+
+Point-cut: pre-merge, on `feat/342-paged-hub-listing-r24`. Question: is the change
+correct, complete and safe to land, with no unpaged-site regression, fakeable test
+or doc/code drift? Lenses, profile-loaded and read-only: reviewer-renata
+(correctness and tests), architect-alphonso (architecture and spec fidelity),
+frontend-freddy (frontend, accessibility, built markup). All three: SHIP WITH FIXES,
+no blocker. Two divergences were adjudicated from the source: `build.format:
+'file'` (Starlight's `localizedUrl` keeps `.html`, so the rewrite missed it: fixed)
+and the order check (`assertListingAgrees` compares membership only: see R3).
+
+| Finding | Disposition | Evidence |
+| --- | --- | --- |
+| F1 A translation without `{page}` gives every page link one name and every listing page one title | accepted | `resolveHubString` falls back to English when a placeholder is dropped; `child-cap.test.ts` |
+| F2/R2 Words after the page number are lost for screen readers | accepted | `pageLabelSuffix`, rendered `sr-only` after the number; `hub-pagination.test.ts` |
+| F3 An unavailable Previous/Next is announced | accepted | its `<li>` is `aria-hidden` (`HubPagination.astro`) |
+| F4 Page 1 and listing pages have different footers | changed | documented in the guide, "The listing pages" |
+| F5 Two `aria-current` on a listing page (sidebar entry and page number) | deferred_with_rationale | the capped hub's "N pages" entry is current on every page of the hub by design (FR-010), as slice 1 does for its children |
+| F6 A picker label with markup escapes the rewrite | accepted | `PICKER_OPTION` matches any label; `listing-alternates.test.ts` |
+| F7 The pagination gap is never rendered in a browser test | deferred_with_rationale | `paginationItems` is unit-tested at 8 and 9 pages; the example keeps 4 pages so its build stays small |
+| R1 `build.format: 'file'` hrefs (`page/4.html`) escape the rewrite | accepted | `normalizeRoute` drops `.html`; `listing-alternates.test.ts` |
+| R3 `assertListingAgrees` does not check order | deferred_with_rationale | on a paged hub every surface takes its order from the hub data, so they cannot disagree; a strict check against the unpaged composition would fail sites whose loader derives a title. The doc comment now says membership and count |
+| R4 `new Map(readHubData())` is last-wins, `hubListingPages` first-wins | deferred_with_rationale | the one producer (`hubData`) lists each hub once |
+| R5 Built pathnames are not decoded | accepted | `builtRoute` decodes them; route-shaping `astro:build:done` uses it |
+| A1 Listing pages are styled only through the Hub layout | changed | the route imports `hub.css`; `kind: Hub` kept on purpose, recorded in ADR-0089 decision 4 |
+| A2 Consumer-sidebar sites cannot set a site-wide cap; paging is on by default | accepted | guide, "Sites with their own sidebar"; changelog fragment |
+| A3 `DK_HUB_DATA` documented as set at `config:done` | accepted | `internal-env.mjs` table and JSDoc |
+| A4 The paging-api contract omits exports and the `RangeError`s | accepted | `contracts/paging-api.md` |
+| A5 The plan still puts the pagination styles in `hub.css` | accepted | `plan.md`, Amendments |
+| A6 `openApiStampConfig` rebuilds the listing per page artifact | deferred_with_rationale | string work only, no correctness effect; with item 5 (memoisation), a follow-up |
+| A7 The example's artifact gate does not run the alternates check | deferred_with_rationale | the example is monolingual, so the check would pass vacuously; `paged-hub-build.test.ts` runs it on a real two-locale build |

@@ -1,0 +1,33 @@
+{
+  "slug": "guides/paged-hub/accessibility",
+  "route": "/guides/paged-hub/accessibility/",
+  "section": "guides",
+  "title": "Accessibility",
+  "description": "The pagination is a labelled navigation landmark that works with a keyboard and a screen reader.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/accessibility.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/accessibility/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Accessibility\n\nThe pagination is a navigation landmark named \"Pagination\". Each page number\nis a link with a label such as \"Page 2\". The current page is plain text marked\nas the current page, so it is announced but never links to itself. Previous\nand Next are links while there is somewhere to go, and plain text at either\nend.\n\nEvery link is at least 24 by 24 pixels and shows the focus ring when it has\nkeyboard focus. The listing needs no script.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/accessibility.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/accessibility/"
+    },
+    "related": []
+  }
+}
