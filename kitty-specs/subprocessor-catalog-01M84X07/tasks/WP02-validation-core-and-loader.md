@@ -17,6 +17,9 @@ requirement_refs:
 planning_base_branch: feat/403-subprocessor-catalog
 merge_target_branch: feat/403-subprocessor-catalog
 branch_strategy: Planning artifacts for this mission were generated on feat/403-subprocessor-catalog. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/403-subprocessor-catalog unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-subprocessor-catalog-01M84X07
+base_commit: bd1c427f1a2c434a62633e717bf40a962b80ba50
+created_at: '2026-11-25T07:00:52.571712+00:00'
 subtasks:
 - T004
 - T005
@@ -24,13 +27,12 @@ subtasks:
 - T007
 - T008
 - T009
+agent: claude
 history:
 - timestamp: '2026-11-23T22:40:00Z'
   agent: claude
   action: Prompt generated via /spec-kitty.tasks
 agent_profile: node-norris
-role: implementer
-agent: claude
 authoritative_surface: src/lib/
 create_intent:
 - src/lib/subprocessors-core.mjs
@@ -46,6 +48,7 @@ owned_files:
 - src/tests/subprocessors-core.test.ts
 - src/tests/subprocessors-loader.test.ts
 - src/tests/fixtures/subprocessors/**
+role: implementer
 tags: []
 tracker_refs: []
 ---
