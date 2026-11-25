@@ -25,14 +25,14 @@
       "wp": null
     },
     "#402": {
-      "evidence_ref": "Context only: cited for ADR numbering (ADR-0085 belongs to #402); this mission owes #402 no work",
+      "evidence_ref": "Context only: cited for ADR numbering (ADR-0085 belongs to #402; closed by PR #446). This mission owes #402 no work",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "Operating-model templates and Role kind (ADR-0085)",
+      "title": "Operating-model templates: opt-in section preset, new-doc/scaffold templates and a Role kind",
       "verdict": "not-applicable",
       "wp": null
     },
