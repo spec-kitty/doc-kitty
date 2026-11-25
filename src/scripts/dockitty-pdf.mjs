@@ -281,10 +281,13 @@ export async function printPdfs(options, { epochSeconds, log = (m) => process.st
   const outDir = path.join(options.out ?? options.dist, 'pdf');
   mkdirSync(outDir, { recursive: true });
   const { server, origin } = await serveDist(options.dist, options.base);
-  // A container's small /dev/shm can crash Chromium on a long document (as in the a11y lane).
-  const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
   const written = [];
+  let browser;
+  // The launch is inside the try: a browser that fails to start must still close the
+  // server, which would otherwise keep the process alive.
   try {
+    // A container's small /dev/shm can crash Chromium on a long document (as in the a11y lane).
+    browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
     for (const doc of documents) {
       const started = Date.now();
       const raw = await printDocument(browser, origin, doc, options.timeout);
@@ -295,8 +298,11 @@ export async function printPdfs(options, { epochSeconds, log = (m) => process.st
       log(`dockitty-pdf: ${path.relative(process.cwd(), file)} (${doc.pages} page(s) printed, ${pdf.length} bytes, ${Date.now() - started} ms)`);
     }
   } finally {
-    await browser.close();
-    server.close();
+    try {
+      await browser?.close();
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
   }
   return written;
 }

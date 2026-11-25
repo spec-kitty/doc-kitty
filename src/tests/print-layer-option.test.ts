@@ -69,9 +69,9 @@ describe('the manifest brings the print layer in only when it is on', () => {
 });
 
 describe('nothing else loads the print client', () => {
-  /** A static `import`, a re-`export … from`, or a dynamic `import()` of the print client. */
+  /** A static `import`, a re-`export … from`, or a dynamic `import()` (any quote) of the print client. */
   const PRINT_CLIENT_IMPORT =
-    /(?:\b(?:import|export)\s*(?:[^'"]*from\s*)?|\bimport\s*\(\s*)['"][^'"]*print\/print\.client(?:\.ts)?['"]/;
+    /(?:\b(?:import|export)\s*(?:[^'"]*from\s*)?|\bimport\s*\(\s*)['"`][^'"`]*print\/print\.client(?:\.ts)?['"`]/;
 
   it('the import pattern matches every form of import, and not a mention in a comment', () => {
     for (const form of [
