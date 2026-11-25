@@ -8,10 +8,10 @@
       "criterion_id": "FR-001",
       "description": "Verify FR-001 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/subprocessors-loader.test.ts (absent/present catalog) and subprocessors-integration.test.ts (no file \u2192 no hook); lane-e a1b67a5e; 216/216 targeted tests pass; full pnpm test green at each WP hand-off",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-25T12:49:46.597961+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
