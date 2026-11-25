@@ -183,7 +183,7 @@
     },
     "WP06": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -193,7 +193,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Example catalog, artifact assertions, guide, changelog, MCP fixture carry-over; full pnpm test green",
-        "Review cycle 1: feed URLs in the base-less scan; exact index-link URLs; guide wording; full pnpm test green"
+        "Review cycle 1: feed URLs in the base-less scan; exact index-link URLs; guide wording; full pnpm test green",
+        "Review cycle 2 passed (claude::reviewer-renata, lane-e a1b67a5e). F1 fixed: findBaselessFeedUrls scans subprocessors.xml; on copied dists, base-less item links fail with 4 findings, a base-less guid, atom:link and channel link each fail with 1, and the unmodified dist passes. The new FAIL test goes red when the 3-line edit is removed. F2 fixed: with the generic _links check isolated, step 11 fails root-relative, wrong-base and base-less hrefs with its own message. F4 fixed: the guide wording matches subprocessors-core and the loader (catalog-level messages carry only the file). Scope: the out-of-map assert-no-broken-links.mjs and no-broken-links.test.ts edits were anticipated by T025, and no other WP or lane owns or touches them. Gates: assert:artifacts and assert:no-broken-links pass, no-broken-links tests pass 65/65, markdownlint reports 0 issues, validate:catalog finds 3 records, and validate:changelog passes. Checklist: 1 N/A, 2 PASS, 3 PASS, 4 PASS, 5 PASS, 6 PASS, 7 PASS (out-of-map note in commit), 8 N/A. Nit, non-blocking: the findBaselessFeedUrls JSDoc and failure reason still list only rss.xml/llms.txt/api."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
