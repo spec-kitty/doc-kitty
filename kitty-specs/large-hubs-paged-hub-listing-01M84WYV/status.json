@@ -214,7 +214,7 @@
     },
     "WP07": {
       "actor": "claude",
-      "agent": "claude",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "reviewer-renata",
       "agent_profile_version": "1.0",
       "force_count": 1,
@@ -225,7 +225,8 @@
       "notes": [
         "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181).",
         "Cycle 2: fold review-cycle-1 items 1-7 and the Q9 ruling",
-        "Cycle 2: review items 1-7 folded; Q9 decided (docs here, code on wip/342-locale-alternates cd1a080f); full pnpm test src 252/4873, mcp 24/185"
+        "Cycle 2: review items 1-7 folded; Q9 decided (docs here, code on wip/342-locale-alternates cd1a080f); full pnpm test src 252/4873, mcp 24/185",
+        "WP07 cycle 2 APPROVED (claude::reviewer-renata). Docs feat/342 @ 145953ce, Q9 code wip/342-locale-alternates @ cd1a080f on lane-f 28ff2c81, coord 8cfdc5c8. Cycle-1 items 1-7 fixed and accurate vs lane-f; Q9 docs match the #342 ruling comment 7155320882; ADR-0089 Proposed, 0089 free on all 61 remote branches; issue matrix covers every issue the docs cite. Q9 code: real-build locale tests + 8/12 filter mutants and 3/3 hook mutants killed (survivors equivalent or cosmetic, see N2); rewrite diff is exactly the hreflang link + 2 picker options; pagination CSP hash unchanged; Pagefind indexes before the rewrite (Starlight precedes route-shaping), removed markup outside the indexed body, index hashes identical; example build byte-identical lane-f vs Q9 in one worktree. Gates on scratch merge (28ff2c81+cd1a080f+145953ce): pnpm test src 252/4873, mcp 24/185 green; lint, typecheck, validate:docs (219), links (1964), changelog (13), adr-ids (86), markdownlint 0. Non-blocking: N1 ADR-0089 title still says \"included in every surface\" (decision 5: but the feeds); N2 picker scoping to <starlight-lang-select> unpinned (whole-body mutant survives) - add a test at R24 fold; N3 dev server not rewritten (build-only, docs say so)."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
