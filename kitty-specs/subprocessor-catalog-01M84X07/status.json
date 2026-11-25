@@ -54,7 +54,8 @@
       "last_transition_at": "2026-11-25T07:47:25.217415+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Core + loader; 71 targeted tests, 4/4 mutations caught; full pnpm test green"
+        "Core + loader; 71 targeted tests, 4/4 mutations caught; full pnpm test green",
+        "Review passed: contract messages match word for word; ISO list = 249 official codes (independently cross-checked, reserved/user-assigned excluded per R-03 note); dates TZ-independent (5 TZs incl. +14/-11), calendar+leap rules, until==since allowed; YAML 1.2 core keeps dates/NO as strings, dup keys and 2nd docs rejected; changes order total. Full pnpm test 4816+181 green, lint/typecheck green, tsc src 59 = baseline. Mutation 35 mutants, 29 killed, 1 equivalent; non-blocking survivors: kebab shape (a--b/-a/a-), until:null, inline note in resolve, readCitationRefs first-wins/type filter."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
