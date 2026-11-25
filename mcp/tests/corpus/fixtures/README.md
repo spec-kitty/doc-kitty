@@ -33,5 +33,14 @@ OpenAPI version records (`reference/api/{main,v1,v1-1}`, carrying the
 OpenAPI-only `released`/`rawDocumentUrl`/`sha256` keys) are appended after
 the docs records, and the page-artifact Atom files (`*.atom.xml`) now sit
 beside the page JSON as they do in a real `dist/api`.
+Updated 2026-11-25 (sub-processor catalog #403, WP06): the example site gained a
+`_meta/subprocessors.yaml`, so its index links `subprocessors` and
+`subprocessorFeed` (ADR-0086), and `api/subprocessors.json` is new. Only those
+were carried over from a fresh build: the two `_links` entries, in the fresh
+build's key order, and `api/subprocessors.json`, which reads no build clock and
+carries no `buildId`. Everything else stays from the 2026-11-08 mint, because a
+full re-mint needs the PlantUML render server, and copying the fresh
+`index.json` alone would tear its `buildId` from the pages'. `derive.mjs` was
+re-run.
 WP05 owns `mcp/tests/fixtures/**` separately - keep this tree WP02-scoped and
 re-mintable via the commands above.

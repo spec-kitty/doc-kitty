@@ -24,6 +24,12 @@
     },
     "scenarios": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/scenarios.json"
+    },
+    "subprocessors": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/subprocessors.json"
+    },
+    "subprocessorFeed": {
+      "href": "https://spec-kitty.github.io/doc-kitty/subprocessors.xml"
     }
   },
   "pages": [

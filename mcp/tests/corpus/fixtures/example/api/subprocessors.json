@@ -1,0 +1,95 @@
+{
+  "title": "Sub-processors",
+  "source": "_meta/subprocessors.yaml",
+  "notice": "Structure only, not legal advice. The site owner's contract governs.",
+  "count": 3,
+  "records": [
+    {
+      "id": "northwind-hosting",
+      "name": "Northwind Hosting",
+      "address": "1 Example Street, Amsterdam",
+      "contact": "privacy@northwind-hosting.example",
+      "processing": "Hosting of the production database and its backups.",
+      "location": [
+        "NL",
+        "DE"
+      ],
+      "location_note": "Backups replicate to a second data centre in Frankfurt.",
+      "responsibilities": "Northwind operates the infrastructure; we configure access and retention.",
+      "since": "2024-03-01",
+      "external_references": [
+        {
+          "url": "https://northwind-hosting.example/dpa",
+          "title": "Northwind Hosting data processing terms (fictional)"
+        }
+      ],
+      "tom_classification": [
+        {
+          "measure": "physical-security",
+          "scope": "system"
+        },
+        {
+          "measure": "certification-assurance",
+          "scope": "system",
+          "note": "Yearly third-party audit of the hosting environment (fictional)."
+        }
+      ]
+    },
+    {
+      "id": "fabrikam-mail",
+      "name": "Fabrikam Mail",
+      "processing": "Delivery of transactional email.",
+      "location": [
+        "IE"
+      ],
+      "responsibilities": "Fabrikam delivers the mail; we decide what is sent and to whom.",
+      "since": "2027-06-01"
+    },
+    {
+      "id": "contoso-analytics",
+      "name": "Contoso Analytics",
+      "processing": "Product usage analytics.",
+      "location": [
+        "US"
+      ],
+      "location_note": "Processing under the provider's transfer terms.",
+      "responsibilities": "Contoso stores the events; we decide which events are sent.",
+      "since": "2023-01-10",
+      "until": "2025-09-30"
+    }
+  ],
+  "changes": [
+    {
+      "date": "2027-06-01",
+      "kind": "added",
+      "id": "fabrikam-mail",
+      "name": "Fabrikam Mail"
+    },
+    {
+      "date": "2025-09-30",
+      "kind": "removed",
+      "id": "contoso-analytics",
+      "name": "Contoso Analytics"
+    },
+    {
+      "date": "2024-03-01",
+      "kind": "added",
+      "id": "northwind-hosting",
+      "name": "Northwind Hosting"
+    },
+    {
+      "date": "2023-01-10",
+      "kind": "added",
+      "id": "contoso-analytics",
+      "name": "Contoso Analytics"
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/subprocessors.json"
+    },
+    "feed": {
+      "href": "https://spec-kitty.github.io/doc-kitty/subprocessors.xml"
+    }
+  }
+}
