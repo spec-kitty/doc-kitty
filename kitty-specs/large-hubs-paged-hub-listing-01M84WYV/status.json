@@ -223,7 +223,8 @@
       "last_transition_at": "2026-11-25T06:58:46.567433+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181)."
+        "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181).",
+        "Cycle 2: fold review-cycle-1 items 1-7 and the Q9 ruling"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
