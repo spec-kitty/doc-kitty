@@ -48,10 +48,10 @@
       "criterion_id": "FR-005",
       "description": "Verify FR-005 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
+      "evidence": "src/tests/subprocessors-core.test.ts: ISO 3166-1 alpha-2 list (249), empty/unassigned/lower-case/duplicate codes, UK/EU rejected; lane-e a1b67a5e; 216/216 targeted tests pass; full pnpm test green at each WP hand-off",
+      "pass_fail": "pass",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-25T12:50:07.809917+00:00",
       "notes": "TODO: replace with a real acceptance criterion"
     },
     {
