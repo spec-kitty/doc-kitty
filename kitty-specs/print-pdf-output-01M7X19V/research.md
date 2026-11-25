@@ -108,6 +108,14 @@ Delivery does not wait for them (C-008). Diagram-heavy sections should wait for 
 
 None opened. The lane stays advisory, as #396 asks (C-004); joining `ci-ok` later is listed as an open operator decision in the PR, not escalated, because nothing in this mission makes it required.
 
+## Rework for SC-004 (2026-11-25, supersedes D-01's delivery point, D-03 and D-03a)
+
+- **Finding**: `consumption-test` SC-004 arm A (a site without the option builds byte for byte what the merge base built) failed on three classes: the print rules and tokens inlined into every page (PageTitle loaded `print.client` unconditionally), and the diagram renderer's chunk (and the deck chunk importing it) rehashed by the D-03 signal and the D-03a pause.
+- **Ruling**: keep the gate (#377, 2026-11-25); the layer is opt-in, new sites start with `print: true` (#377, 2026-11-25).
+- **Decision**: a `print` option, on with `print: true`, `printControl` or any PDF; the manifest exports `PrintLayer` only then (ADR-0075 pattern). The renderer is main's file again. `dockitty-pdf` loads pages light and waits for every laid-out `pre.mermaid` to be `data-processed` and hold an `<svg>`. The hook skips a page with client-mode diagrams; the print-token fallback prints it light.
+- **Rejected**: a compile-time define in the renderer (esbuild dead-code elimination left a different minified file); a fixture opt-out or allowance (relaxes the gate).
+- **Scaffold**: no toolkit scaffold writes an astro config, so "new sites get `print: true`" lands in the consumer-setup starter config.
+
 ## Supply chain
 
 No dependency added, upgraded or removed (DIRECTIVE_051 controls: not applicable). `playwright@1.62.1` is an existing optional peer, exact-pinned.
