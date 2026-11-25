@@ -2,207 +2,207 @@
   "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
       "description": "Verify FR-001 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Hub data for every published Hub in every sidebar mode: src/tests/hub-data-every-hub.test.ts, hub-caps-data.test.ts (WP02 approved, lane-b)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-002",
       "description": "Verify FR-002 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "HubCap keeps its fields; capped/pageSize optional: src/tests/child-cap.test.ts, pnpm typecheck clean; contracts/paging-api.md (WP01/WP02 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-003",
       "description": "Verify FR-003 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Hub/section/site page size, most specific first, default 50: src/tests/hub-page-size-settings.test.ts; paged-hub-build.test.ts \"page-size levels\" (WP01 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-004",
       "description": "Verify FR-004 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Non-positive-integer page size stops the build naming the setting: hub-page-size-settings.test.ts ([dk-config], section, hub_page_size frontmatter gate) (WP01 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-005",
       "description": "Verify FR-005 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Only capped hubs over their page size are paged; unpaged sites byte-identical (route mounted only when paged, inline style): paged-hubs-integration.test.ts, existing CSS/HTML goldens in the full suite (WP03/WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-006",
       "description": "Verify FR-006 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Hub page lists page 1 then the pagination: paged-hub-build.test.ts \"lists 1-50 on the hub\", hub-pagination.test.ts (WP03 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-007",
       "description": "Verify FR-007 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Static /<hub>/page/N/ pages in listing order, every child once, reachable via pagination: paged-hub-build.test.ts (WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-008",
       "description": "Verify FR-008 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Pagination landmark, aria-current, 24px targets, focus ring: tests/a11y/paged-hub-listing.spec.ts + axe pages pagedHub/pagedHubPage, hub-pagination.test.ts (WP03/WP06 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-009",
       "description": "Verify FR-009 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Pagination strings from UI strings with English fallback: paged-hub-build.test.ts translated-locale test, i18n-plugin keys (WP03 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-010",
       "description": "Verify FR-010 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Listing page in the Starlight frame, titled \"<hub>, page N\", hub lead, N pages entry current, no prev/next: paged-hub-build.test.ts (WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-011",
       "description": "Verify FR-011 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Self-canonical honouring base: paged-hub-build.test.ts (WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-012",
       "description": "Verify FR-012 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Sitemap holds every child and every listing page once: paged-hub-build.test.ts sitemap test; assert-build-artifacts sitemap pin 97 (WP04/WP06 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-013",
       "description": "Verify FR-013 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Agent API Listing records + per-page children, llms.txt listing lines: agent-listing-records.test.ts, llms-paged-hubs.test.ts (golden), mcp/tests/corpus/paged-hub-entries.test.ts (WP05 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-014",
       "description": "Verify FR-014 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Listing pages indexed by search without demoting child pages: paged-hub-build.test.ts search-index assertion (WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-015",
       "description": "Verify FR-015 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Links gate, agent checks, build assertions green with paged routes and red on a broken pagination link: no-broken-links-pagination.test.ts, assert-build-artifacts assertPagedHub + CSP hash pin (WP06 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-016",
       "description": "Verify FR-016 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "A page child of a paged hub fails the build naming hub and child, case-insensitive: paged-hub-build.test.ts FR-016, hub-data-every-hub collision tests (WP02/WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-017",
       "description": "Verify FR-017 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Consumer sidebar gets identical listing pages and its sidebar as written: paged-hub-build.test.ts FR-017 (WP04 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-018",
       "description": "Verify FR-018 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Per-locale paging; alternates name only built listing pages (operator Q9 ruling, #342 comment 7155320882): paged-hub-build.test.ts locale tests, listing-alternates.test.ts on wip/342-locale-alternates cd1a080f (WP04 approved; Q9 code reviewed in WP07 cycle 2; mandatory R24 fold)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-019",
       "description": "Verify FR-019 is satisfied",
       "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "evidence": "Pure paging API exported from @spec-kitty/doc-toolkit/child-cap: child-cap.test.ts; contracts/paging-api.md incl. cappedHubCaps (WP01 approved)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     },
     {
       "criterion_id": "FR-020",
       "description": "Verify FR-020 is satisfied",
-      "proof_type": "automated_test",
-      "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "proof_type": "review",
+      "evidence": "docs/guides/paged-hub-listing.md, ADR-0089 (Proposed), slice-1 guide refs, changelog fragment, example guides/paged-hub (WP06/WP07 approved; validate:docs/links/changelog/adr-ids green)",
+      "pass_fail": "pass",
+      "verified_by": "claude::implementer-ivan",
+      "verified_at": "2026-11-25T07:43:15.208973+00:00",
+      "notes": "Full pnpm test green on lane-f + Q9 + WP07 docs: src 252/4873, mcp 24/185"
     }
   ],
   "negative_invariants": []
