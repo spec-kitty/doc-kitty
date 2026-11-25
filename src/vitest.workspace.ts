@@ -82,6 +82,8 @@ const BUILD_SUITES = [
   'tests/sidebar-icons-build.test.ts',
   'tests/page-atom-build.test.ts',
   'tests/footer-links-build.test.ts',
+  // The `print` option end to end (#462 review LOW-4): builds the chrome fixture.
+  'tests/print-layer-build.test.ts',
   // MCP served-site conformance lane (doc-kitty-mcp-server WP08, FR-001
   // anti-fake): builds example/ once into its own DK_OUTDIR
   // (dist-wp08-mcp-lane), serves that fresh build statically over 127.0.0.1, spawns the freshly `tsc`-built

@@ -76,8 +76,8 @@ describe('nothing else loads the print client', () => {
     });
 
   it('only PrintLayer.astro imports print.client, so a site without the layer bundles none of it', () => {
-    const importers = files(path.join(SRC, 'components'))
-      .filter((file) => file.endsWith('.astro'))
+    const importers = [...files(path.join(SRC, 'components')), ...files(path.join(SRC, 'lib')), ...files(path.join(SRC, 'layouts'))]
+      .filter((file) => /\.(astro|ts|mjs|js)$/.test(file))
       .filter((file) => /\bimport\s*(?:[^'"]*from\s*)?['"][^'"]*print\/print\.client(?:\.ts)?['"]/.test(readFileSync(file, 'utf8')))
       .map((file) => path.relative(SRC, file).split(path.sep).join('/'));
     expect(importers).toEqual(['components/print/PrintLayer.astro']);
