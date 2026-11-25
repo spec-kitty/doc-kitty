@@ -1,7 +1,7 @@
 {
-  "event_count": 15,
-  "last_event_id": "01M88T5KVY8FWG94228S06R5ZT",
-  "materialized_at": "2026-11-25T07:36:52.350557+00:00",
+  "event_count": 17,
+  "last_event_id": "01M88TB1MN6CS1AS1EFB6HPQN5",
+  "materialized_at": "2026-11-25T07:39:50.140222+00:00",
   "mission_number": "",
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_type": "software-dev",
@@ -12,20 +12,20 @@
     "claimed": 0,
     "done": 0,
     "for_review": 1,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 6
+    "planned": 5
   },
   "work_packages": {
     "WP01": {
       "actor": "claude",
       "agent": null,
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "planned",
-      "last_event_id": "01M88T5KVY8FWG94228S06R5ZT",
-      "last_transition_at": "2026-11-25T07:36:52.350557+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M88TB1MN6CS1AS1EFB6HPQN5",
+      "last_transition_at": "2026-11-25T07:39:50.140222+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "ADR-0086 (Proposed) + regenerated ADR index; validators and full pnpm test green"
@@ -38,7 +38,7 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
+      "role": "implementer",
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
