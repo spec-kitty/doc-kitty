@@ -24,4 +24,4 @@ section: Fixed
   drawn in one Arial-metric font (Arial, Helvetica, Liberation Sans or Arimo).
   An `%%{init}%%` `fontFamily` is neither shown nor used for measurement. A font
   set in author CSS (`classDef`, `style` or an `%%{init}%%` `themeCSS` rule) is
-  kept and can still overflow (#412). Sequence diagram font keys are #458.
+  kept and can still overflow (#412).
