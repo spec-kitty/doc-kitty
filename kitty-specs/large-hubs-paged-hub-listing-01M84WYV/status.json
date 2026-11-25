@@ -214,7 +214,7 @@
     },
     "WP07": {
       "actor": "claude",
-      "agent": "claude::reviewer-renata",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -226,6 +226,7 @@
         "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181)."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "/home/user/doc-kitty/.worktrees/large-hubs-paged-hub-listing-01M84WYV-coord/kitty-specs/large-hubs-paged-hub-listing-01M84WYV/tasks/WP07-documentation-and-adr/review-cycle-1.md",
         "reference": "review-cycle://large-hubs-paged-hub-listing-01M84WYV/WP07-documentation-and-adr/review-cycle-1.md",
@@ -233,13 +234,13 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 455,
-      "shell_pid_created_at": "1795589236.69",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T030": "done",
-        "T031": "done",
-        "T032": "done",
-        "T033": "done"
+        "T030": "planned",
+        "T031": "planned",
+        "T032": "planned",
+        "T033": "planned"
       }
     }
   }
