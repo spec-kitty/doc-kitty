@@ -3,7 +3,7 @@
  * reports shaping warnings once per build. Moved out of `config.ts` (#115);
  * `config.ts` re-exports every public symbol.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
@@ -11,13 +11,18 @@ import type { AstroIntegration } from 'astro';
 import { resolveIndexEntries, sectionOf, type IndexBasenameOption } from '../metadata.js';
 import { resolveSectionRegistry, sectionFeeds, feedsSurface, sectionOrder, type SectionRegistry } from '../sections.js';
 import { buildDirectoryMeta, pageRouteSlug, type DirectoryMetaInput } from '../route-shaping.js';
-import { isChildCap, resolveChildCap, type HubCap } from '../child-cap.js';
+import { hubListingPages, isChildCap, isPagedHub, resolveChildCap, resolveHubPageSize, type HubCap } from '../child-cap.js';
+import { PAGED_HUB_ROUTE } from './paged-hubs.js';
+import { dropUnbuiltListingAlternates } from '../listing-alternates.js';
 import { composeHubChildren, selectHubChildren } from '../hub-children.mjs';
 import { loadAdrIdRule } from '../../scripts/generate-adr-index.mjs';
 import { chromeOptions } from '../chrome-options.js';
 import { createBuildState, shapingWarningSink, type BuildState } from '../build-state.js';
 import { compareCodeUnit, isDraftStatus } from '../vocabulary-core.mjs';
 import { walkMarkdownPaths } from '../docs-walk.mjs';
+import { fileURLToPath } from 'node:url';
+import { DK_HUB_DATA_ENV, setInternalEnv } from '../internal-env.mjs';
+import { writeHubData } from '../hub-data-handoff.js';
 import { normalizeBasePrefix, siteDraftRoutes } from './shared.js';
 
 // ===========================================================================
@@ -70,6 +75,8 @@ export interface RouteShapingOptions {
   childCap?: number;
   /** The `sidebar.cappedLabel` option (#341); absent = the locale's UI string. */
   cappedLabel?: string;
+  /** The site's `hub.pageSize` (#342); absent = the section's, else the default. */
+  pageSize?: number;
 }
 
 /** A docs page as the sidebar seam reads it: the directory-metadata input plus what the child cap needs. */
@@ -78,6 +85,8 @@ interface ShapingPage extends DirectoryMetaInput {
   docStatus?: string;
   /** The page's `sidebar_child_cap`, when it is a valid cap. */
   childCap?: number;
+  /** The page's `hub_page_size` (#342), when it is a valid page size. */
+  hubPageSize?: number;
   /** The page's `kind`: only a `kind: Hub` index lists its children, so only it can be capped. */
   kind?: string;
   /** The page's `type`: the hub's ADR composition leaves out `type: Template`. */
@@ -107,6 +116,7 @@ function directoryMetaInputs(
       title?: unknown;
       doc_status?: unknown;
       sidebar_child_cap?: unknown;
+      hub_page_size?: unknown;
       kind?: unknown;
       type?: unknown;
       sidebar?: { label?: unknown; order?: unknown };
@@ -136,6 +146,7 @@ function directoryMetaInputs(
         ...(typeof data.doc_status === 'string' ? { docStatus: data.doc_status } : {}),
         // An invalid value fails the schema and the frontmatter gate; here it is just not a cap.
         ...(isChildCap(data.sidebar_child_cap) ? { childCap: data.sidebar_child_cap } : {}),
+        ...(isChildCap(data.hub_page_size) ? { hubPageSize: data.hub_page_size } : {}),
         ...(typeof data.kind === 'string' ? { kind: data.kind } : {}),
         ...(typeof data.type === 'string' ? { type: data.type } : {}),
         ...(data.kind === 'ADR' ? { body: content } : {}),
@@ -145,17 +156,24 @@ function directoryMetaInputs(
 }
 
 /**
- * The hubs over their sidebar child cap (#341), sorted by folder (NFR-003). A hub
- * is a folder whose published index page has `kind: Hub`; its children are counted
- * and ordered by `composeHubChildren`, what the hub page lists (C-003), so drafts,
- * unnumbered ADRs and `type: Template` ADRs never count. The cap is the hub's `sidebar_child_cap`, else its section's
- * `sidebar.childCap`, else the site's, else the default. A hub at or under its
- * cap is not emitted, so a site with no large hub serves an empty list.
+ * The data of every hub, sorted by folder (NFR-003): the sidebar child cap (#341)
+ * and, since #342/#429, every hub whatever its cap and the sidebar mode, with
+ * `capped` and the listing `pageSize`. A hub is a folder whose published index
+ * page has `kind: Hub`; its children are counted and ordered by
+ * `composeHubChildren`, what the hub page lists (C-003), so drafts, unnumbered
+ * ADRs and `type: Template` ADRs never count.
+ *
+ * The cap is the hub's `sidebar_child_cap`, else its section's `sidebar.childCap`,
+ * else the site's, else the default; the page size is the hub's `hub_page_size`,
+ * else its section's `hub.pageSize`, else the site's, else the default.
+ *
+ * Throws when a paged hub has a child whose slug is `<hub>/page`: its route would
+ * collide with the paged listing URLs `/<hub>/page/N/` (#342, FR-016).
  */
-function hubCaps(
+function hubData(
   pages: readonly ShapingPage[],
   registry: SectionRegistry | null,
-  siteCap: number | undefined,
+  site: { cap: number | undefined; pageSize: number | undefined },
   idRule: ReturnType<typeof loadAdrIdRule>,
 ): Array<[string, HubCap]> {
   const entries = pages.map((page) => ({
@@ -171,8 +189,7 @@ function hubCaps(
   }));
   const labelOf = new Map(entries.map((entry) => [entry.slug, entry.label]));
   const order = registry ? sectionOrder(registry) : undefined;
-  const sectionCap = (dir: string): number | undefined =>
-    registry?.find((section) => section.id === sectionOf(dir))?.sidebar?.childCap;
+  const sectionOfDir = (dir: string) => registry?.find((section) => section.id === sectionOf(dir));
   const out: Array<[string, HubCap]> = [];
   // A hub is a folder whose PUBLISHED index page is `kind: Hub`: only that page lists
   // the folder's children, so only there does the capped entry lead to them. A draft
@@ -185,14 +202,56 @@ function hubCaps(
     // First index wins on a duplicate slug, as in `buildDirectoryMeta`.
     if (seen.has(hub.slug)) continue;
     seen.add(hub.slug);
-    const cap = resolveChildCap({ hub: hub.childCap, section: sectionCap(hub.slug), site: siteCap });
+    const section = sectionOfDir(hub.slug);
+    const cap = resolveChildCap({ hub: hub.childCap, section: section?.sidebar?.childCap, site: site.cap });
+    const pageSize = resolveHubPageSize({ hub: hub.hubPageSize, section: section?.hub?.pageSize, site: site.pageSize });
     // The order and count the hub page shows (`composeHubChildren`, as Hub.astro).
     const { adrCards, others } = composeHubChildren(selectHubChildren(entries, hub.slug, order), { idRule });
     const listed = [...adrCards.map((card) => card.slug), ...others.map((entry) => entry.slug)];
-    if (listed.length <= cap) continue;
-    out.push([hub.slug, { cap, count: listed.length, children: listed.map((slug) => ({ slug, label: labelOf.get(slug) ?? '' })) }]);
+    const data: HubCap = {
+      cap,
+      count: listed.length,
+      capped: listed.length > cap,
+      pageSize,
+      children: listed.map((slug) => ({ slug, label: labelOf.get(slug) ?? '' })),
+    };
+    if (isPagedHub(data)) {
+      // Every routed page under the hub counts, listed or not (a `type: Template`
+      // ADR is routed but not listed), and an index-less `page/` folder's pages
+      // route onto the listing URLs themselves. Routes ignore case (`PAGE.md`).
+      const prefix = `${hub.slug}/page`.toLowerCase();
+      // The first clashing page in code-unit order, whatever order the walk gave.
+      const clash = pages
+        .filter((page) => {
+          const slug = page.slug.toLowerCase();
+          return slug === prefix || slug.startsWith(`${prefix}/`);
+        })
+        .sort((a, b) => compareCodeUnit(a.slug, b.slug))[0];
+      if (clash) {
+        throw new Error(
+          `[dk-hubs] hub "${hub.slug}" is paged, but its child "${clash.slug}" would collide with the paged listing URLs; rename the child or raise the hub's page size or cap`,
+        );
+      }
+    }
+    out.push([hub.slug, data]);
   }
   return out;
+}
+
+/**
+ * The published pages the route-shaping data is built from: every docs page
+ * except the withheld drafts and the pages of a withheld draft directory.
+ */
+function shapingPages(options: RouteShapingOptions, state: BuildState, hidden: ReadonlySet<string>): ShapingPage[] {
+  return directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
+    (input) => !hidden.has(input.slug),
+  );
+}
+
+/** {@link hubData} for the site: its docs root, section registry, options and ADR id rule. */
+function siteHubData(options: RouteShapingOptions, pages: readonly ShapingPage[]): Array<[string, HubCap]> {
+  const root = path.resolve(process.cwd(), options.docsDir);
+  return hubData(pages, resolveSectionRegistry(root), { cap: options.childCap, pageSize: options.pageSize }, loadAdrIdRule(root));
 }
 
 /**
@@ -210,20 +269,12 @@ export function routeShapingSource(
 ): string {
   const unpublished = [...new Set(state.unpublishedDirs)].sort(compareCodeUnit);
   const hidden = new Set(unpublished);
-  const pages = options.shapeSidebar
-    ? directoryMetaInputs(options.docsDir, options.indexBasename, new Set(state.unpublishedPaths)).filter(
-        (input) => !hidden.has(input.slug),
-      )
-    : [];
+  // Read in every sidebar mode (#342/#429): the hub page, the paged listing and the
+  // agent surfaces need every hub's data even when the consumer writes the sidebar.
+  // The directory metadata stays shaping-only, so a consumer sidebar is untouched.
+  const pages = shapingPages(options, state, hidden);
   const meta = options.shapeSidebar ? buildDirectoryMeta(pages) : new Map();
-  const capped = options.shapeSidebar
-    ? hubCaps(
-        pages,
-        resolveSectionRegistry(path.resolve(process.cwd(), options.docsDir)),
-        options.childCap,
-        loadAdrIdRule(path.resolve(process.cwd(), options.docsDir)),
-      )
-    : [];
+  const hubs = siteHubData(options, pages);
   const { sidebar: chromeSidebar } = chromeOptions();
   const data = {
     base: normalizeBasePrefix(options.base),
@@ -235,7 +286,7 @@ export function routeShapingSource(
     // The renderer's markers, on whenever that renderer runs (`usesCustomSidebar` in manifest.ts).
     annotate: chromeSidebar.titleIsIndex || state.iconsAuthored,
     ...(options.indexLabel ? { indexLabel: options.indexLabel } : {}),
-    hubCaps: capped,
+    hubCaps: hubs,
     ...(options.cappedLabel ? { cappedLabel: options.cappedLabel } : {}),
   };
   return (
@@ -272,14 +323,48 @@ export function routeShapingIntegration(
       return id === RESOLVED ? routeShapingSource(options, state) : null;
     },
   };
+  // The listing pages this build mounts (#342), set by the setup hook; the
+  // build-done hook drops their alternates to unbuilt locale listing pages (Q9).
+  let listingSlugs: string[] = [];
   return {
     name: 'doc-kitty:route-shaping',
     hooks: {
-      'astro:config:setup': ({ updateConfig }) => {
+      'astro:config:setup': ({ updateConfig, injectRoute, config }) => {
         shapingWarningSink().clear();
         updateConfig({ vite: { plugins: [plugin] } });
+        // The hub data for the mount and the handoff (#342), computed once here:
+        // the glossary pages and the withheld drafts are known by now (their
+        // integrations' setup hooks run before this one). It mounts the paged
+        // listing route `/<hub>/page/<n>/`, only when a hub is paged, and is handed
+        // off, as a file (E2BIG), to the routes that cannot import the virtual
+        // module (the agent API, llms.txt, the build identity), so the mount and
+        // those surfaces list the same pages. The virtual module computes its
+        // `hubCaps` again when Vite loads it, from the same inputs and with the
+        // same function (`siteHubData`), so the two agree.
+        const hubs = siteHubData(options, shapingPages(options, state, new Set(state.unpublishedDirs)));
+        listingSlugs = hubListingPages(hubs).map((page) => page.slug);
+        if (listingSlugs.length > 0) injectRoute(PAGED_HUB_ROUTE);
+        // Astro passes its `cacheDir`; without one (a harness that runs the hook
+        // directly), Astro's own default, `./node_modules/.astro`.
+        const cacheDir = config?.cacheDir ? fileURLToPath(config.cacheDir) : path.resolve(process.cwd(), 'node_modules', '.astro');
+        setInternalEnv(DK_HUB_DATA_ENV, writeHubData(path.join(cacheDir, 'doc-kitty-hubs'), hubs));
       },
-      'astro:build:done': () => {
+      'astro:build:done': ({ pages, dir }) => {
+        // Locales page to their own depth, so a listing page's hreflang links and
+        // language picker can name a locale listing page that was never built:
+        // keep only the built ones (the operator's Q9 ruling). Only listing pages
+        // are read; a site with no paged hub skips this entirely.
+        if (listingSlugs.length > 0) {
+          const built = new Set(pages.map((page) => page.pathname.replace(/^\/+|\/+$/g, '')));
+          const outDir = fileURLToPath(dir);
+          for (const slug of listingSlugs) {
+            const file = [path.join(outDir, slug, 'index.html'), path.join(outDir, `${slug}.html`)].find((f) => existsSync(f));
+            if (!file) continue;
+            const html = readFileSync(file, 'utf8');
+            const rewritten = dropUnbuiltListingAlternates(html, options.base, built);
+            if (rewritten !== html) writeFileSync(file, rewritten);
+          }
+        }
         const sink = shapingWarningSink();
         for (const warning of [...sink].sort(compareCodeUnit)) {
           console.warn(`[dk-sidebar] ${warning}`);

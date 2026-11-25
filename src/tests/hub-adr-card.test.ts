@@ -29,6 +29,8 @@ import { isPublished } from '../lib/metadata.js';
 const HUB = fileURLToPath(new URL('../layouts/Hub.astro', import.meta.url));
 const GENERATOR = fileURLToPath(new URL('../scripts/generate-adr-index.mjs', import.meta.url));
 const HUB_CHILDREN = fileURLToPath(new URL('../lib/hub-children.mjs', import.meta.url));
+// #342: Hub.astro's card composition moved to lib/hub-cards.ts, shared with the paged listing route.
+const HUB_CARDS = fileURLToPath(new URL('../lib/hub-cards.ts', import.meta.url));
 const ADR_ID = fileURLToPath(new URL('../lib/adr-id.mjs', import.meta.url));
 
 interface AdrSpec {
@@ -350,6 +352,7 @@ describe('ADR Hub card — number order, status+date badge, single-sourced (T017
 
 describe('single-source enforcement gate (T023, NFR-001 for #50; #57 composition)', () => {
   const hubSrc = readFileSync(HUB, 'utf8');
+  const hubCardsSrc = readFileSync(HUB_CARDS, 'utf8');
   const genSrc = readFileSync(GENERATOR, 'utf8');
   const hubChildrenSrc = readFileSync(HUB_CHILDREN, 'utf8');
   const adrIdSrc = readFileSync(ADR_ID, 'utf8');
@@ -357,7 +360,7 @@ describe('single-source enforcement gate (T023, NFR-001 for #50; #57 composition
   /** Strip block, line, and JSX comments so prose that mentions ADR shapes
    *  (e.g. a comment saying the extractor reads `## Status`) is not mistaken for
    *  parsing code. */
-  const hubCode = hubSrc
+  const hubCode = `${hubSrc}\n${hubCardsSrc}`
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
 
@@ -366,8 +369,11 @@ describe('single-source enforcement gate (T023, NFR-001 for #50; #57 composition
     // itself — it imports the composed unit from hub-children.mjs...
     // Since #341 it imports `composeHubChildren`, the one composition the hub page and
     // the sidebar child cap share, which is itself built on `selectAdrHubCards`.
-    expect(hubSrc).toMatch(
-      /import\s*\{[^}]*\bcomposeHubChildren\b[^}]*\}\s*from\s*['"]\.\.\/lib\/hub-children\.mjs['"]/,
+    // Since #342 the composition sits in lib/hub-cards.ts, which the hub page and
+    // the paged listing route both import; the chain of custody runs through it.
+    expect(hubSrc).toMatch(/import\s*\{[^}]*\bcomposeHubCards\b[^}]*\}\s*from\s*['"]\.\.\/lib\/hub-cards\.js['"]/);
+    expect(hubCardsSrc).toMatch(
+      /import\s*\{[^}]*\bcomposeHubChildren\b[^}]*\}\s*from\s*['"]\.\/hub-children\.mjs['"]/,
     );
     const composeFn = hubChildrenSrc.slice(hubChildrenSrc.indexOf('export function composeHubChildren'));
     expect(composeFn).toContain('selectAdrHubCards(');

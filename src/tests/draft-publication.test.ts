@@ -1289,7 +1289,9 @@ describe('defineDocKittyIntegrations: internal env handoffs across two configs i
       let plugin: { load: (id: string) => string | null } | undefined;
       const run = (name: string) => {
         const hook = integrations.find((i) => i.name === name)?.hooks?.['astro:config:setup'] as (c: unknown) => void;
-        hook({ command: 'build', config: { root }, updateConfig: (c: { vite?: { plugins?: unknown[] } }) => { plugin = c.vite?.plugins?.[0] as typeof plugin; } });
+        // `injectRoute` as Astro passes it: the example has a paged hub (#342), so the
+        // route-shaping hook mounts the listing route.
+        hook({ command: 'build', config: { root }, injectRoute: () => {}, updateConfig: (c: { vite?: { plugins?: unknown[] } }) => { plugin = c.vite?.plugins?.[0] as typeof plugin; } });
       };
       run('doc-kitty:draft-publication');
       run('doc-kitty:route-shaping');
