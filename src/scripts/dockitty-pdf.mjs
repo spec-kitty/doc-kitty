@@ -308,8 +308,12 @@ export async function printPdfs(options, { epochSeconds, log = (m) => process.st
     closeError = error;
   }
   await new Promise((resolve) => server.close(resolve));
-  // A failed print is the error to report: a close error after it would hide the cause.
-  if (printError) throw printError;
+  // A failed print is the error to report: a close error after it would hide the cause,
+  // so it goes to stderr instead of being lost.
+  if (printError) {
+    if (closeError) process.stderr.write(`dockitty-pdf: closing the browser also failed: ${closeError.message ?? closeError}\n`);
+    throw printError;
+  }
   if (closeError) throw closeError;
   return written;
 }
