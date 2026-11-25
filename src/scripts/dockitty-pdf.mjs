@@ -283,6 +283,7 @@ export async function printPdfs(options, { epochSeconds, log = (m) => process.st
   const { server, origin } = await serveDist(options.dist, options.base);
   const written = [];
   let browser;
+  let printError;
   // The launch is inside the try: a browser that fails to start must still close the
   // server, which would otherwise keep the process alive.
   try {
@@ -297,13 +298,19 @@ export async function printPdfs(options, { epochSeconds, log = (m) => process.st
       written.push(file);
       log(`dockitty-pdf: ${path.relative(process.cwd(), file)} (${doc.pages} page(s) printed, ${pdf.length} bytes, ${Date.now() - started} ms)`);
     }
-  } finally {
-    try {
-      await browser?.close();
-    } finally {
-      await new Promise((resolve) => server.close(resolve));
-    }
+  } catch (error) {
+    printError = error;
   }
+  let closeError;
+  try {
+    await browser?.close();
+  } catch (error) {
+    closeError = error;
+  }
+  await new Promise((resolve) => server.close(resolve));
+  // A failed print is the error to report: a close error after it would hide the cause.
+  if (printError) throw printError;
+  if (closeError) throw closeError;
   return written;
 }
 
