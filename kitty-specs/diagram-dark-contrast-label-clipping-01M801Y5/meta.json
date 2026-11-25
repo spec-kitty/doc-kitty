@@ -1,5 +1,4 @@
 {
-  "accept_commit": "e40616f54adaeef7b0c5a687e60e95e6e3fb542f",
   "acceptance_history": [
     {
       "accept_commit": "e40616f54adaeef7b0c5a687e60e95e6e3fb542f",
@@ -7,12 +6,18 @@
       "accepted_at": "2026-11-22T06:25:15.032026+00:00",
       "accepted_by": "claude::implementer",
       "accepted_from_commit": "ffcb2c88e3e1f826c7d19e61e65567ba830b6c2b"
+    },
+    {
+      "acceptance_mode": "local",
+      "accepted_at": "2026-11-25T09:00:47.684867+00:00",
+      "accepted_by": "claude::implementer",
+      "accepted_from_commit": "1792fb86070eedeb2940a705d895e47aac49c55e"
     }
   ],
-  "acceptance_mode": "pr",
-  "accepted_at": "2026-11-22T06:25:15.032026+00:00",
+  "acceptance_mode": "local",
+  "accepted_at": "2026-11-25T09:00:47.684867+00:00",
   "accepted_by": "claude::implementer",
-  "accepted_from_commit": "ffcb2c88e3e1f826c7d19e61e65567ba830b6c2b",
+  "accepted_from_commit": "1792fb86070eedeb2940a705d895e47aac49c55e",
   "contracts": "none",
   "contracts_rationale": "Build-time render transform and CSS only: no API, event or CLI interface is added or changed.",
   "coordination_branch": "kitty/mission-diagram-dark-contrast-label-clipping-01M801Y5",
