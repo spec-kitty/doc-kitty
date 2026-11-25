@@ -1,7 +1,7 @@
 {
-  "event_count": 61,
-  "last_event_id": "01M88SJN77S0W6YTMJ043SST89",
-  "materialized_at": "2026-11-25T07:26:31.143140+00:00",
+  "event_count": 62,
+  "last_event_id": "01M88SRV2S0GW8DBYWA6D2Z0X4",
+  "materialized_at": "2026-11-25T07:29:53.753227+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 2,
+    "for_review": 1,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
@@ -60,14 +60,14 @@
     },
     "WP02": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 4,
       "implementer_of_record": "claude::node-norris",
-      "lane": "for_review",
-      "last_event_id": "01M88SJN77S0W6YTMJ043SST89",
-      "last_transition_at": "2026-11-25T07:26:31.143140+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M88SRV2S0GW8DBYWA6D2Z0X4",
+      "last_transition_at": "2026-11-25T07:29:53.753227+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green",
@@ -87,9 +87,9 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": 21457,
-      "shell_pid_created_at": "1795333571.07",
+      "role": "reviewer",
+      "shell_pid": 1193,
+      "shell_pid_created_at": "1795591787.83",
       "subtasks": {
         "T005": "done",
         "T006": "done",
