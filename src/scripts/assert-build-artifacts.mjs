@@ -2974,6 +2974,68 @@ async function main() {
   // links, raw documents and checksums, llms.txt, sitemap, search, no console, CSP.
   await assertOpenApiArtifacts(distDir);
 
+  // 11) Sub-processor catalog (ADR-0086): the example's fictional
+  // `docs/_meta/subprocessors.yaml` (three records: current, announced, past)
+  // publishes the agent document and the change feed, and the index links both.
+  const subApiAbs = path.join(distDir, 'api', 'subprocessors.json');
+  await assertNonEmptyFile(subApiAbs, 'api/subprocessors.json');
+  let subDoc;
+  try {
+    subDoc = JSON.parse(await readTextOrFail(subApiAbs, 'api/subprocessors.json'));
+  } catch (err) {
+    fail(`api/subprocessors.json: not valid JSON (${err.message})`);
+  }
+  const subIds = (subDoc.records ?? []).map((r) => r.id).join(', ');
+  if (subDoc.count !== 3 || subIds !== 'northwind-hosting, fabrikam-mail, contoso-analytics') {
+    fail(`api/subprocessors.json: expected the 3 example records in file order, got count ${subDoc.count}: ${subIds}`);
+  }
+  const subChanges = (subDoc.changes ?? []).map((c) => `${c.date} ${c.kind} ${c.id}`);
+  const expectedChanges = [
+    '2027-06-01 added fabrikam-mail',
+    '2025-09-30 removed contoso-analytics',
+    '2024-03-01 added northwind-hosting',
+    '2023-01-10 added contoso-analytics',
+  ];
+  if (subChanges.join('|') !== expectedChanges.join('|')) {
+    fail(`api/subprocessors.json: changes are ${JSON.stringify(subChanges)}, expected ${JSON.stringify(expectedChanges)}`);
+  }
+  ok('api/subprocessors.json: 3 records in file order and 4 changes, newest (announced) first');
+
+  const subFeedAbs = path.join(distDir, 'subprocessors.xml');
+  await assertNonEmptyFile(subFeedAbs, 'subprocessors.xml');
+  const subFeed = await readTextOrFail(subFeedAbs, 'subprocessors.xml');
+  try {
+    assertWellFormedXml(subFeed);
+  } catch (err) {
+    fail(`subprocessors.xml: not well-formed XML (${err.message})`);
+  }
+  const subItems = subFeed.match(/<item>/g)?.length ?? 0;
+  if (subItems !== 4) fail(`subprocessors.xml: expected 4 <item>s (one per change), found ${subItems}`);
+  for (const title of ['Added: Fabrikam Mail', 'Removed: Contoso Analytics']) {
+    if (!subFeed.includes(`<title>${title}</title>`)) fail(`subprocessors.xml: no item titled "${title}"`);
+  }
+  if (subFeed.includes('lastBuildDate')) {
+    fail('subprocessors.xml: carries a lastBuildDate; the feed must not read the build clock (ADR-0086, NFR-001)');
+  }
+  ok('subprocessors.xml: well-formed, 4 items with added and removed titles, no build date');
+
+  let subIndexLinks;
+  try {
+    subIndexLinks = JSON.parse(await readTextOrFail(path.join(distDir, 'api', 'index.json'), 'api/index.json'))._links ?? {};
+  } catch (err) {
+    fail(`api/index.json: not valid JSON (${err.message})`);
+  }
+  for (const [key, suffix] of [
+    ['subprocessors', '/doc-kitty/api/subprocessors.json'],
+    ['subprocessorFeed', '/doc-kitty/subprocessors.xml'],
+  ]) {
+    const href = subIndexLinks[key]?.href;
+    if (typeof href !== 'string' || !href.endsWith(suffix)) {
+      fail(`api/index.json: _links.${key}.href is ${JSON.stringify(href)}, expected an absolute, base-aware URL ending ${suffix}`);
+    }
+  }
+  ok('api/index.json: links the sub-processor document and feed under the site base');
+
   process.stdout.write(`assert:artifacts: PASS — all build artifacts present and valid in ${distDir}\n`);
 }
 

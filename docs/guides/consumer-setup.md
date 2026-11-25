@@ -928,6 +928,96 @@ and the record. This holds even when no page uses the catalog yet: a duplicate i
 a missing field or an unknown `nature` is reported. An unknown measure id on a
 page fails both as well, naming the page and the id.
 
+## Sub-processor catalog
+
+A site that documents a service processing personal data can keep the list of
+its sub-processors in one checked file, `docs/_meta/subprocessors.yaml`
+([ADR-0086](/adr/0086-subprocessor-catalog/)). The build validates it, publishes
+it for agents and announces changes in a feed. You need no configuration: the
+file is the switch.
+
+> [!CAUTION]
+> This is not legal advice. The toolkit provides the structure. The facts about
+> each sub-processor, and the terms under which you may engage one, are yours,
+> and your contract governs. The field set awaits review by data-protection
+> counsel: do not call it DPA-ready on the toolkit's word.
+
+**No file, no change.** Without `docs/_meta/subprocessors.yaml` the build
+publishes nothing new and reports nothing. The toolkit ships no records. A file
+that is empty, or holds an empty list (`[]`), is a valid catalog with no records:
+the outputs are published, empty.
+
+**The records.** Write a YAML list, one record per sub-processor:
+
+```yaml
+# docs/_meta/subprocessors.yaml
+- id: northwind-hosting
+  name: Northwind Hosting
+  address: 1 Example Street, Amsterdam
+  contact: privacy@northwind-hosting.example
+  processing: Hosting of the production database and its backups.
+  location: [NL, DE]
+  location_note: Backups replicate to a second data centre in Frankfurt.
+  responsibilities: Northwind operates the infrastructure; we configure access.
+  since: 2024-03-01
+  tom_classification: [physical-security]
+```
+
+| Field | Required | Value |
+|---|---|---|
+| `id` | yes | kebab case, unique in the file |
+| `name` | yes | non-empty string |
+| `address` | no | non-empty string |
+| `contact` | no | non-empty string |
+| `processing` | yes | non-empty string: what the sub-processor does |
+| `location` | yes | non-empty list of ISO 3166-1 alpha-2 codes, upper case, no duplicates |
+| `location_note` | no | non-empty string, for what a code cannot say |
+| `responsibilities` | yes | non-empty string: who does what |
+| `since` | yes | a date, `YYYY-MM-DD` |
+| `until` | no | a date, `YYYY-MM-DD`, not before `since` |
+| `external_references` | no | as on a page: `{ url, title }` or `{ type: biblio \| tool, id }` |
+| `tom_classification` | no | as on a page: measure ids, resolved against the [measures catalog](#measures-catalog) |
+
+Any other key is an error, so a typo such as `untill` cannot silently drop a
+removal date. Only officially assigned country codes pass: `UK` and `EU` are
+rejected (write `GB` for the United Kingdom).
+
+**What the build publishes.** With a valid catalog the site serves:
+
+- `api/subprocessors.json`: every record, with its references resolved, and a
+  `changes` list with one `added` entry per `since` and one `removed` entry per
+  `until`, newest first;
+- `subprocessors.xml`: an RSS feed with one item per change.
+
+`api/index.json` links both, as `_links.subprocessors` and
+`_links.subprocessorFeed`. Neither output carries a build time, so the same
+catalog publishes the same bytes on any day. A site that mounts its own route at
+either path keeps it.
+
+**Announcing a change.** Write a future `since` for a new sub-processor, or a
+future `until` for one that is leaving. The next build puts the change in the
+feed with that date, so readers see it before it takes effect.
+
+> [!IMPORTANT]
+> Whether the feed meets your contract's notice terms is for your counsel to
+> decide. The feed is a channel, not the notice itself.
+
+**Ending a sub-processor.** Set `until`; do not delete the record. Past
+sub-processors stay in the document and in the feed history.
+
+**Validation.** `pnpm validate:catalog` checks the file without a build. A bad
+catalog fails the build too, before any page renders, with one error that lists
+every problem. Each message names the file, the record (or its position when the
+id is unusable) and the field. Both report the same problems in the same words.
+
+**Limits.**
+
+- There is no field for the transfer mechanism (such as standard contractual
+  clauses) yet.
+- A catalog created while `astro dev` runs is picked up on the next restart.
+- The human-readable list page follows the generated-section contract
+  ([ADR-0087](/adr/0087-generated-section-contract/)) and ships separately.
+
 ## Page chrome
 
 The page chrome is what surrounds a page's content: the sidebar, the metadata
