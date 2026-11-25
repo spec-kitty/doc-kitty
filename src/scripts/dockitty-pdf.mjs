@@ -8,10 +8,12 @@
  * `<dist>` under `--base` on a loopback port, and prints each document (or the
  * `--sections` subset; `site` names the whole-site PDF) to `<out|dist>/pdf/<name>.pdf`.
  *
- * Per document it opens the route with the light theme stored, sets
- * `data-theme="light"` (Chromium's `page.pdf()` never fires `beforeprint`), emulates
- * print media, waits for fonts and, where client-mode diagrams exist, for the renderer
- * to report a light render (`html[data-dk-diagram-theme="light"]`). Then
+ * Per document it opens the route with the light theme stored and a light colour scheme,
+ * so the page loads light and client-mode diagrams draw light the first time (Chromium's
+ * `page.pdf()` never fires `beforeprint`, and a later theme switch would make the
+ * renderer redraw). It refuses a page that did not load light, emulates print media,
+ * waits for fonts and, where client-mode diagrams exist, for every one that is laid out
+ * to hold its drawing (`pre.mermaid[data-processed]` with an `<svg>`). Then
  * `page.pdf({ tagged, outline, preferCSSPageSize })`, without background graphics so
  * only the print layer's `print-color-adjust: exact` blocks keep their fills. Finally
  * the post-pass pins both dates to `SOURCE_DATE_EPOCH` (else the last commit time) and
@@ -177,6 +179,18 @@ export function lightCheck() {
   };
 }
 
+/**
+ * In the page: whether every client-mode diagram that is laid out holds its drawing. The
+ * renderer skips a node without a box, and `mermaid.run` marks a node `data-processed`
+ * and puts its `<svg>` in place of the source; a node reset for a redraw holds neither.
+ * Exported for the unit test.
+ */
+export function clientDiagramsDrawn() {
+  return [...document.querySelectorAll('pre.mermaid')]
+    .filter((node) => node.getClientRects().length > 0)
+    .every((node) => node.hasAttribute('data-processed') && node.querySelector('svg') !== null);
+}
+
 /** Print one document; returns the PDF bytes before the post-pass. */
 async function printDocument(browser, origin, doc, timeout) {
   const context = await browser.newContext();
@@ -185,7 +199,7 @@ async function printDocument(browser, origin, doc, timeout) {
       try {
         window.localStorage.setItem('starlight-theme', 'light');
       } catch {
-        /* storage off: the attribute below still applies */
+        /* storage off: the light colour scheme below still gives the light theme */
       }
     });
     const page = await context.newPage();
@@ -195,15 +209,10 @@ async function printDocument(browser, origin, doc, timeout) {
     await page.emulateMedia({ media: 'print', colorScheme: 'light' });
     const response = await page.goto(`${origin}${doc.route}`, { waitUntil: 'load', timeout });
     if (!response || !response.ok()) throw new Error(`${doc.route} answered ${response?.status() ?? 'nothing'}`);
-    // Switch only when needed: setting the same value still notifies the diagram
-    // renderer's observer, which would reset every diagram while the old "light" signal
-    // still stands. On a switch, clear the signal so the wait below sees the new render.
-    await page.evaluate(() => {
-      const root = document.documentElement;
-      if (root.getAttribute('data-theme') === 'light') return;
-      root.removeAttribute('data-dk-diagram-theme');
-      root.setAttribute('data-theme', 'light');
-    });
+    // The page must have loaded light: a switch now would make the diagram renderer
+    // redraw every client-mode diagram, and a print could catch one mid-redraw.
+    const theme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+    if (theme !== 'light') throw new Error(`${doc.route}: the page loaded in the "${theme}" theme, not light`);
     // Lazy images below the fold would print blank, or not, depending on timing: load
     // every image now and wait for each to decode (a broken one is not this command's
     // concern; the link gates own it).
@@ -219,9 +228,9 @@ async function printDocument(browser, origin, doc, timeout) {
     await page.waitForLoadState('networkidle', { timeout });
     if ((await page.locator('pre.mermaid').count()) > 0) {
       try {
-        await page.waitForSelector('html[data-dk-diagram-theme="light"]', { state: 'attached', timeout });
+        await page.waitForFunction(clientDiagramsDrawn, undefined, { timeout });
       } catch {
-        throw new Error(`${doc.route}: client-mode diagrams did not finish a light render within ${timeout} ms`);
+        throw new Error(`${doc.route}: client-mode diagrams were not drawn within ${timeout} ms`);
       }
     }
     const colours = await page.evaluate(lightCheck);

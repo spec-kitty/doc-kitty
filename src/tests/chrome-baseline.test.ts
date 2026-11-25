@@ -28,7 +28,6 @@ import {
   readBaseline,
   resolvedVersion,
   sidebarFragment,
-  normalisePrintHook,
 } from './fixtures/chrome/harness.mjs';
 
 /** The commit the goldens were captured on: this WP's base, before any behaviour change. */
@@ -85,7 +84,7 @@ describe('the frozen fixture matches its pre-mission goldens', () => {
         expect(current, `the page renders its ${panel} panel`).toContain(`dk-panel--${panel}`);
       }
       // WP04's block regions and WP09's footer groups and head links legitimately change the page.
-      expect(normaliseFooterAndHeadLinks(normaliseMetadataBlocks(normalisePrintHook(current)), 'actual')).toBe(
+      expect(normaliseFooterAndHeadLinks(normaliseMetadataBlocks(current), 'actual')).toBe(
         normaliseFooterAndHeadLinks(normaliseMetadataBlocks(golden('page.html')), 'golden'),
       );
     },
@@ -107,7 +106,7 @@ describe('the frozen fixture matches its pre-mission goldens', () => {
 
 describe('normaliseFooterAndHeadLinks keeps the page comparison honest', () => {
   const built = () => readBaseline(buildChromeFixture({ options: BASELINE_OPTIONS }).dist)['page.html'];
-  const normal = (page: string) => normaliseFooterAndHeadLinks(normaliseMetadataBlocks(normalisePrintHook(page)), 'actual');
+  const normal = (page: string) => normaliseFooterAndHeadLinks(normaliseMetadataBlocks(page), 'actual');
   const goldenNormal = () => normaliseFooterAndHeadLinks(normaliseMetadataBlocks(golden('page.html')), 'golden');
 
   it(
@@ -397,26 +396,4 @@ describe('DK_TEST_OPTIONS', () => {
     },
     BUILD_TIMEOUT,
   );
-});
-
-describe('normalisePrintHook stays narrow', () => {
-  const page = () => readBaseline(buildChromeFixture({ options: BASELINE_OPTIONS }).dist)['page.html'];
-
-  it(
-    'removes the one print hook script and nothing else',
-    () => {
-      const current = page();
-      const stripped = normalisePrintHook(current);
-      expect(stripped).not.toContain('data-dk-printing');
-      const hook = current.match(/<script type="module">[^<]*data-dk-printing[^<]*<\/script>/)?.[0] ?? '';
-      expect(hook, 'the removed script is the print hook').toContain('beforeprint');
-      expect(stripped, 'only the hook script went').toBe(current.replace(hook, ''));
-      expect((stripped.match(/<script/g) ?? []).length).toBe((current.match(/<script/g) ?? []).length - 1);
-    },
-    BUILD_TIMEOUT,
-  );
-
-  it('fails on a page without the hook, so it cannot pass vacuously', () => {
-    expect(() => normalisePrintHook('<html><body></body></html>')).toThrow(/no print hook script/);
-  });
 });

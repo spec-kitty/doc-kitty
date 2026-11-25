@@ -62,7 +62,7 @@ import { pageAtomIntegration } from './integrations/page-atom.js';
 import { servedSurfacesIntegration } from './integrations/served-surfaces.js';
 import { sidebarIconsIntegration } from './integrations/sidebar-icons.js';
 import { validateChromeOptions, type ChromeOptionsInput, type ChromeSidebarInput } from './chrome-options.js';
-import { pdfDocumentNames, resolvePdfOptions, validatePdfOptions, type PdfOptionsInput } from './pdf-options.js';
+import { pdfDocumentNames, resolvePdfOptions, resolvePrintLayer, validatePdfOptions, type PdfOptionsInput } from './pdf-options.js';
 import { printRouteIntegrations } from './integrations/print-route.js';
 import { createBuildState } from './build-state.js';
 import type { DocKittyGherkinOption } from './integrations/shared.js';
@@ -461,9 +461,18 @@ export interface DocKittyOptions {
    * authors no `pdf` key in `sections.yaml` (an authored value wins); `site` turns on
    * the whole-site PDF at `/pdf/site.pdf`; `exclude` adds sections and page kinds to
    * leave out of every print document (slide decks are always left out). All off by
-   * default. The print layer itself is on for every site and has no option.
+   * default. Any PDF turns the print layer on.
    */
   pdf?: PdfOptionsInput;
+  /**
+   * The page print layer (ADR-0081, #378): print rules that hide the screen chrome and
+   * print on white, and a hook that prints a dark-mode page light. Opt-in: on with
+   * `print: true`, `printControl: true` or any PDF; off otherwise, so a site that sets
+   * none of them builds exactly what it did before. `dockitty-scaffold` writes
+   * `print: true` for a new site. `print: false` next to a setting that needs the layer
+   * is a config error.
+   */
+  print?: boolean;
 }
 
 /**
@@ -662,6 +671,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     repository,
     printControl,
     pdf,
+    print,
     starlight: overrides,
   } = options;
   const { starlightSidebar: sidebar, indexLabel, childCap, cappedLabel, chrome: sidebarChrome } =
@@ -681,6 +691,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // any registry warning, including one for an invalid `pdf` value.
   const resolvedPdf = resolvePdfOptions(pdfInput, resolveSectionRegistry(path.resolve(process.cwd(), docsDir), { warn: () => {} }));
   setInternalEnv(DK_PDF_OPTIONS_ENV, JSON.stringify(resolvedPdf));
+  // The print layer (ADR-0081): opt-in, resolved eagerly so `print: false` next to the
+  // print control or a PDF throws at config time. Off, it is in no module graph.
+  const printLayer = resolvePrintLayer({ print, printControl, pdfDocuments: pdfDocumentNames(resolvedPdf) });
 
   // PlantUML external-include opt-in (#268): resolved EAGERLY so an invalid value
   // throws at config time. The resolution is always published (sandbox included) so
@@ -1093,7 +1106,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // carriers as `virtual:doc-kitty/manifest` (synchronous `resolveLayout`, no
     // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports
     // the manifest even on the no-theme path (Hub registered, else Default).
-    docKittyManifest(resolved, buildState),
+    docKittyManifest(resolved, buildState, { printLayer }),
     // Make the theme's package-asset favicon actually servable at the path
     // handed to Starlight above (no-op with no theme favicon, or when the theme
     // points at a `public/` path the consumer already ships).

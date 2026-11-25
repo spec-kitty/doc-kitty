@@ -135,6 +135,35 @@ export function pdfDocumentNames(resolved: ResolvedPdfOptions): string[] {
   return resolved.site ? [...resolved.sections, SITE_PDF_NAME] : [...resolved.sections];
 }
 
+/** What decides whether the print layer is on. */
+export interface PrintLayerInput {
+  /** The site's `print` option, as authored. */
+  print?: boolean;
+  /** The site's `printControl` option: the control prints the page. */
+  printControl?: boolean;
+  /** The PDFs the site publishes (`pdfDocumentNames`): their print documents need the print rules. */
+  pdfDocuments: readonly string[];
+}
+
+/**
+ * Whether the print layer (the print rules, the print-token fallback and the force-light
+ * hook) is on. Opt-in (ADR-0081): on with `print: true`, the print control or any PDF,
+ * off otherwise, so a site that sets none of them builds exactly what it built before
+ * the layer existed (SC-004). `print: false` next to a setting that needs the layer is a
+ * contradiction, refused at config time.
+ */
+export function resolvePrintLayer({ print, printControl, pdfDocuments }: PrintLayerInput): boolean {
+  if (print !== undefined && typeof print !== 'boolean') fail('print must be a boolean');
+  const needs = [
+    ...(printControl === true ? ['printControl: true'] : []),
+    ...(pdfDocuments.length > 0 ? [`pdf (${pdfDocuments.join(', ')})`] : []),
+  ];
+  if (print === false && needs.length > 0) {
+    fail(`print: false turns the print layer off, but ${needs.join(' and ')} needs it; drop print: false or that setting`);
+  }
+  return print === true || needs.length > 0;
+}
+
 let cached: { raw: string | undefined; options: ResolvedPdfOptions } | undefined;
 
 /**

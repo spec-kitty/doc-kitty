@@ -1,0 +1,16 @@
+---
+/**
+ * PrintLayer — the page print layer (ADR-0081, #378): the print rules, the generated
+ * print-token fallback and the force-light print hook, all brought in by
+ * `print/print.client.ts`.
+ *
+ * Opt-in. `virtual:doc-kitty/manifest` exports this component only on a site with the
+ * print layer on (`print: true`, the print control or a PDF), and `PageTitle.astro`
+ * renders it from there. On any other site it is in no module graph, so the build
+ * carries none of the layer (SC-004: a default build is unchanged).
+ */
+---
+
+<script>
+  import '../../lib/print/print.client.ts';
+</script>

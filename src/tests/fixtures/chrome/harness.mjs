@@ -236,27 +236,6 @@ export function normaliseFooterAndHeadLinks(html, side) {
 }
 
 /**
- * The print layer's hook (#378, `src/lib/print/print.client.ts`), which `PageTitle.astro`
- * loads on every in-frame page after the goldens were captured. The bundler inlines it as
- * one module script after the metadata band; its rules ride the disclosure `<style>`
- * that `normaliseMetadataBlocks` already covers. Only an inline module script that
- * carries the hook's own `data-dk-printing` marker matches, exactly once, so any other
- * script, or a second copy, still fails the comparison.
- */
-const PRINT_HOOK_SCRIPT = /<script type="module">[^<]*data-dk-printing[^<]*<\/script>/;
-
-/**
- * Remove the print hook's inline script from an ACTUAL page. Throws when the page has
- * none, so the normaliser cannot pass by matching nothing.
- *
- * @param {string} html
- */
-export function normalisePrintHook(html) {
-  if (!PRINT_HOOK_SCRIPT.test(html)) throw new Error('normalisePrintHook: the actual page has no print hook script');
-  return html.replace(PRINT_HOOK_SCRIPT, '');
-}
-
-/**
  * The whole rules WP09 adds to the emitted CSS, as the build writes them: the groups'
  * scoped sheets (their `.astro-HASH` is already `astro-HASH` in `emittedCss`), and the
  * theme's link rules. Each is a literal, not a pattern, so a rule that changes, goes

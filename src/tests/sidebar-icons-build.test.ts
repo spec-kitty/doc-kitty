@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildChromeFixture, DEEP_PAGE, emittedCss, GOLDEN_DIR, NON_HUB_PAGE, normaliseFooterAndHeadLinks, normaliseFooterCss, normaliseMetadataBlocks, normalisePrintHook, readBaseline, REPO_ROOT, sidebarFragment } from './fixtures/chrome/harness.mjs';
+import { buildChromeFixture, DEEP_PAGE, emittedCss, GOLDEN_DIR, NON_HUB_PAGE, normaliseFooterAndHeadLinks, normaliseFooterCss, normaliseMetadataBlocks, readBaseline, REPO_ROOT, sidebarFragment } from './fixtures/chrome/harness.mjs';
 import { resolveIcon } from '../lib/sidebar-icons.js';
 import { FONT_AWESOME_LICENCE_COMMENT } from '../components/sidebar/sidebar-data.js';
 
@@ -157,7 +157,7 @@ describe('no icons, no change (FR-028)', () => {
       const stock = readBaseline(built(GOLDEN));
       expect(stock['sidebar.html']).toBe(golden('sidebar.html'));
       expect(normaliseFooterCss(stock['css.txt'])).toBe(golden('css.txt'));
-      expect(normaliseFooterAndHeadLinks(normaliseMetadataBlocks(normalisePrintHook(stock['page.html'])), 'actual')).toBe(
+      expect(normaliseFooterAndHeadLinks(normaliseMetadataBlocks(stock['page.html']), 'actual')).toBe(
         normaliseFooterAndHeadLinks(normaliseMetadataBlocks(golden('page.html')), 'golden'),
       );
 

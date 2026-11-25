@@ -9,6 +9,9 @@
 //   - the page identity (title, metadata band) still prints.
 // A second test prints the dark mode WITHOUT the event (a browser that never fires
 // `beforeprint`): the generated print-token fallback must still give a light page.
+// A third covers a page with client-mode diagrams (`pre.mermaid`): the hook leaves its
+// theme alone, so the renderer's redraw cannot reset the diagrams mid-print, and the
+// fallback alone prints it light.
 // Tabs: no tabs component exists in this repository (FR-008a descope), so no tab case.
 import { expect, test, type Page } from '@playwright/test';
 import { gotoInMode, modeOf } from './mode';
@@ -44,12 +47,10 @@ async function lightValue(page: Page, name: string): Promise<string> {
   return page.evaluate((n) => {
     const root = document.documentElement;
     const before = root.getAttribute('data-theme');
-    root.setAttribute('data-dk-printing', '');
     root.setAttribute('data-theme', 'light');
     const value = getComputedStyle(root).getPropertyValue(n).trim();
     if (before === null) root.removeAttribute('data-theme');
     else root.setAttribute('data-theme', before);
-    setTimeout(() => root.removeAttribute('data-dk-printing'), 0);
     return value;
   }, name);
 }
@@ -123,4 +124,26 @@ test('print media without beforeprint: the generated fallback still prints a dar
   // The text colour comes from the tokens alone, so this is the fallback's own effect.
   expect(await textLuminance(page), 'the fallback prints the text dark').toBeLessThan(100);
   await expectChromeHidden(page);
+});
+
+// The dark theme is opened in both projects. This lane builds diagrams at build time, so
+// a client-mode diagram node is planted to put the page in that state.
+test('print media with client-mode diagrams: the hook keeps the theme, the fallback prints light', async ({ page }) => {
+  await gotoInMode(page, ROUTES.prose, 'dark');
+  await page.evaluate(() => {
+    const node = document.createElement('pre');
+    node.className = 'mermaid';
+    node.textContent = 'graph TD; A-->B';
+    document.querySelector('main')?.append(node);
+  });
+  await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('html'), 'the hook does not switch a page with client-mode diagrams').toHaveAttribute(
+    'data-theme',
+    'dark',
+  );
+  expect(await bodyLuminance(page), 'the page background prints light').toBeGreaterThan(230);
+  expect(await textLuminance(page), 'the text prints dark').toBeLessThan(100);
+  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
