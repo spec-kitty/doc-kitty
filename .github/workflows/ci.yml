@@ -557,6 +557,12 @@ jobs:
         run: node src/scripts/assert-pdf-artifacts.mjs example/dist-nodrafts
       - name: Assert two prints are byte-identical
         run: node src/scripts/assert-pdf-determinism.mjs example/dist-nodrafts --base /doc-kitty
+      # The dist above draws its diagrams at build time. A client-mode site prints
+      # Mermaid's browser render, whose edge paths use Math.random (seeded by
+      # dockitty-pdf): build the small chrome fixture in client mode and check two
+      # prints of it are byte-identical too (#394).
+      - name: Assert two client-mode prints are byte-identical
+        run: node src/tests/fixtures/chrome/pdf-client-determinism.mjs
       - name: Upload the PDFs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
