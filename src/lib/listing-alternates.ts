@@ -29,11 +29,11 @@ const PICKER_OPTION = /<option value="([^"]*)"[^>]*>[\s\S]*?<\/option>/g;
 function routeOf(href: string, base: string): string | null {
   let pathname: string;
   try {
-    pathname = decodeURIComponent(new URL(href, 'http://dk.invalid').pathname);
+    pathname = decodeURIComponent(new URL(href, 'https://dk.invalid').pathname);
   } catch {
     return null;
   }
-  const prefix = base.replace(/\/+$/, '');
+  const prefix = trimSlashes(base, 'end');
   if (prefix !== '') {
     if (pathname !== prefix && !pathname.startsWith(`${prefix}/`)) return null;
     pathname = pathname.slice(prefix.length);
@@ -41,9 +41,21 @@ function routeOf(href: string, base: string): string | null {
   return normalizeRoute(pathname);
 }
 
+/** `value` without its leading and/or trailing slashes; a plain scan, no regex backtracking. */
+function trimSlashes(value: string, side: 'both' | 'end' = 'both'): string {
+  let start = 0;
+  let end = value.length;
+  if (side === 'both') while (start < end && value[start] === '/') start += 1;
+  while (end > start && value[end - 1] === '/') end -= 1;
+  return value.slice(start, end);
+}
+
 /** A decoded pathname as a route: no leading or trailing slash, no `.html` (`build.format: 'file'`). */
 function normalizeRoute(pathname: string): string {
-  return pathname.replace(/^\/+|\/+$/g, '').replace(/(?:^|\/)index\.html$|\.html$/, '');
+  const route = trimSlashes(pathname);
+  if (route === 'index.html') return '';
+  if (route.endsWith('/index.html')) return route.slice(0, -'/index.html'.length);
+  return route.endsWith('.html') ? route.slice(0, -'.html'.length) : route;
 }
 
 /**

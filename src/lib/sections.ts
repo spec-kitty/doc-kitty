@@ -209,7 +209,7 @@ function normalizeSectionEntries(
         throw new Error(`${src}: section "${id}" "hub" must be a mapping`);
       }
       const { pageSize, ...rest } = hub as Record<string, unknown>;
-      const unknown = Object.keys(rest).sort();
+      const unknown = Object.keys(rest).sort(compareCodeUnit);
       if (unknown.length > 0) {
         throw new Error(`${src}: section "${id}" hub has unknown key "${unknown[0]}"; known keys: pageSize`);
       }
