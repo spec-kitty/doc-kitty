@@ -1,20 +1,20 @@
 {
-  "event_count": 60,
-  "last_event_id": "01M88R1FKKGCAZ2EJNK3ASNTM8",
-  "materialized_at": "2026-11-25T06:59:39.763435+00:00",
+  "event_count": 62,
+  "last_event_id": "01M88SRV2S0GW8DBYWA6D2Z0X4",
+  "materialized_at": "2026-11-25T07:29:53.753227+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
   "schema_version": 2,
   "summary": {
-    "approved": 2,
+    "approved": 1,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 1,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
@@ -63,11 +63,11 @@
       "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 3,
+      "force_count": 4,
       "implementer_of_record": "claude::node-norris",
-      "lane": "approved",
-      "last_event_id": "01M813HD1B2Q4AXFGFG6GF83Q2",
-      "last_transition_at": "2026-11-22T07:46:40.299762+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M88SRV2S0GW8DBYWA6D2Z0X4",
+      "last_transition_at": "2026-11-25T07:29:53.753227+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green",
@@ -76,7 +76,8 @@
         "Cycle 3: author edge colours (operator ruling, option a)",
         "Cycle 3: author edge colours. Red 6fb4c8b (fixture lineColor #0a0721 + linkStyle #f5f5f5; all edges >=3:1 asserted; dark 1.02, light 1.04). Fix 33a1421: per-edge/per-marker id-scoped themed override only in the theme where the author colour is <3:1 vs pure black/white. Unit 4306/4306, mcp 181, typecheck, lint; legibility+diagram e2e 36/36",
         "Cycle 4 fixed: red a1bf498 (#949494 edge 2.91:1 on the light page under the extremes rule); fix 0c7658f: per-theme backdrop range (black..lightest dark surface; darkest light surface..white; toolkit defaults, brand covered by test), sampled with translucent compositing. Unit 4309/4309, mcp 181, typecheck, lint; legibility+diagram e2e 36/36",
-        "Review passed (cycle 4, claude::reviewer-renata). The cycle-3 blocker is fixed in 0c7658f: edgeThemesToOverride now samples each theme's backdrop luminance range (dark: black up to the lightest dark surface; light: the darkest light surface up to white; EDGE_SURFACES from theme.css), with the ends included. That covers the opaque worst case (an end of the range, or inside it). Verified: #5c5c5c and #606060 are themed in dark; #949494 and #d9731a in light; #1168bd is kept in both; #0a0721 in dark and #f5f5f5 in light are as before. RAN: my own sweep (729 colours x 3 opacities). All 1894 kept theme/colour pairs clear 3:1 on every real surface of their theme (#131721, #0e131c, black; #ffffff, #eef1f6), with translucent strokes blended over the actual tinted surfaces. pnpm test src 4309/4309, mcp 181/181; lint and typecheck clean. Nit: compositing a translucent stroke over a grey of equal luminance is an approximation for tinted surfaces; the sweep found no case where it matters. Docs: diagrams.md and the changelog do not claim black/white for edges. But diagrams.md line 171 ('An edge colour the author sets is the author's to check') is now stale after the edge override (operator ruling, option a). It must be updated with the font wording at consolidation (WP03 file, not WP02 scope). The fixture edit to a WP01 file is a recorded out-of-map edit. Accepted from the implementer (no PlantUML server here): the legibility + diagram e2e run, 36/36."
+        "Review passed (cycle 4, claude::reviewer-renata). The cycle-3 blocker is fixed in 0c7658f: edgeThemesToOverride now samples each theme's backdrop luminance range (dark: black up to the lightest dark surface; light: the darkest light surface up to white; EDGE_SURFACES from theme.css), with the ends included. That covers the opaque worst case (an end of the range, or inside it). Verified: #5c5c5c and #606060 are themed in dark; #949494 and #d9731a in light; #1168bd is kept in both; #0a0721 in dark and #f5f5f5 in light are as before. RAN: my own sweep (729 colours x 3 opacities). All 1894 kept theme/colour pairs clear 3:1 on every real surface of their theme (#131721, #0e131c, black; #ffffff, #eef1f6), with translucent strokes blended over the actual tinted surfaces. pnpm test src 4309/4309, mcp 181/181; lint and typecheck clean. Nit: compositing a translucent stroke over a grey of equal luminance is an approximation for tinted surfaces; the sweep found no case where it matters. Docs: diagrams.md and the changelog do not claim black/white for edges. But diagrams.md line 171 ('An edge colour the author sets is the author's to check') is now stale after the edge override (operator ruling, option a). It must be updated with the font wording at consolidation (WP03 file, not WP02 scope). The fixture edit to a WP01 file is a recorded out-of-map edit. Accepted from the implementer (no PlantUML server here): the legibility + diagram e2e run, 36/36.",
+        "Cycle 5 (ruling B covers measurement): red 47a62e7, fix 05d21c1, merge of mission branch 044f559 (no WP02 file changes). BUILD_MERMAID_CONFIG.secure = Mermaid defaults + 'fontFamily' (author init font neither shown nor measured; other directive values kept, init lineColor #0a0721 still in SVG); SVGO inlineStyles off (one-edge flowchart keeps flowchart-link); wrong comment corrected. Evidence: fresh build, diagram-legibility green light+dark at 1280/390, edges [3,2,1,3,4,3], serif labels fit; pnpm test 4309+181 passed, typecheck 0, lint 0. Sequence font keys -> follow-up #458."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -87,8 +88,8 @@
         "verdict": "approved"
       },
       "role": "reviewer",
-      "shell_pid": 21457,
-      "shell_pid_created_at": "1795333571.07",
+      "shell_pid": 1193,
+      "shell_pid_created_at": "1795591787.83",
       "subtasks": {
         "T005": "done",
         "T006": "done",
