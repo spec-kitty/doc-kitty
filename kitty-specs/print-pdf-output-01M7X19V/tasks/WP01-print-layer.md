@@ -106,7 +106,7 @@ One `@media print` block plus `@page { size: A4; margin: 18mm 16mm; }` (outside 
 
 ### T003 Force-light hook
 
-`src/lib/print/print.client.ts` imports `../../styles/print.css` and `virtual:doc-kitty/print-tokens.css`. On `beforeprint`: remember `document.documentElement.dataset.theme`, set `light` (only if not already), never touch `localStorage`. On `afterprint`: restore. Independent of the disclosure handler (different state, no shared listener). Before forcing light it sets `data-dk-printing` on `<html>` and clears it one task after `afterprint` (D-03a). Loaded from `PageTitle.astro` with `<script>import '../lib/print/print.client.ts';</script>`. *(Superseded 2026-11-25: the layer is opt-in and loaded by `PrintLayer.astro` through the manifest; see research.md "Rework for SC-004".)*
+`src/lib/print/print.client.ts` imports `../../styles/print.css` and `virtual:doc-kitty/print-tokens.css`. On `beforeprint`: remember `document.documentElement.dataset.theme`, set `light` (only if not already), never touch `localStorage`. On `afterprint`: restore. Independent of the disclosure handler (different state, no shared listener). *(Superseded 2026-11-25, see research.md "Rework for SC-004": there is no `data-dk-printing` pause; the hook skips a page with client-mode diagrams; and the layer is opt-in, loaded by `PrintLayer.astro` through the manifest, not from `PageTitle.astro`.)*
 
 ### T004 Diagram completion signal
 

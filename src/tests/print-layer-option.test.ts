@@ -69,6 +69,22 @@ describe('the manifest brings the print layer in only when it is on', () => {
 });
 
 describe('nothing else loads the print client', () => {
+  /** A static `import`, a re-`export … from`, or a dynamic `import()` of the print client. */
+  const PRINT_CLIENT_IMPORT =
+    /(?:\b(?:import|export)\s*(?:[^'"]*from\s*)?|\bimport\s*\(\s*)['"][^'"]*print\/print\.client(?:\.ts)?['"]/;
+
+  it('the import pattern matches every form of import, and not a mention in a comment', () => {
+    for (const form of [
+      "import '../lib/print/print.client.ts';",
+      "import x from './print/print.client';",
+      "export { y } from '../print/print.client.ts';",
+      "await import('../lib/print/print.client.ts');",
+    ]) {
+      expect(PRINT_CLIENT_IMPORT.test(form), form).toBe(true);
+    }
+    expect(PRINT_CLIENT_IMPORT.test('the handler lives in `print/print.client.ts`')).toBe(false);
+  });
+
   const files = (dir: string): string[] =>
     readdirSync(dir).flatMap((name) => {
       const full = path.join(dir, name);
@@ -78,7 +94,7 @@ describe('nothing else loads the print client', () => {
   it('only PrintLayer.astro imports print.client, so a site without the layer bundles none of it', () => {
     const importers = [...files(path.join(SRC, 'components')), ...files(path.join(SRC, 'lib')), ...files(path.join(SRC, 'layouts'))]
       .filter((file) => /\.(astro|ts|mjs|js)$/.test(file))
-      .filter((file) => /\bimport\s*(?:[^'"]*from\s*)?['"][^'"]*print\/print\.client(?:\.ts)?['"]/.test(readFileSync(file, 'utf8')))
+      .filter((file) => PRINT_CLIENT_IMPORT.test(readFileSync(file, 'utf8')))
       .map((file) => path.relative(SRC, file).split(path.sep).join('/'));
     expect(importers).toEqual(['components/print/PrintLayer.astro']);
   });
