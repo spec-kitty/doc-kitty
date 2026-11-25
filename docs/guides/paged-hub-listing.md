@@ -2,7 +2,7 @@
 title: Page large hub listings
 description: Split a large hub's page list into static listing pages. Set the page size per site, section or hub, and see where the listing pages appear.
 doc_status: active
-updated: 2026-11-24T00:00:00Z
+updated: 2026-11-25T00:00:00Z
 type: Guide
 kind: How-To
 tags: [hubs, paging, scale, configuration, consumer, accessibility]
@@ -126,9 +126,9 @@ the page numbers and Next.
 
 ## Where the listing pages appear
 
-Listing pages are included in every surface, each exactly once. The hub and
-sidebar limits are there to make navigation easier for people, not to hide
-content. No child page is listed twice because of paging.
+Listing pages are included in every surface but the feeds, each exactly once.
+The hub and sidebar limits are there to make navigation easier for people, not to
+hide content. No child page is listed twice because of paging.
 
 - **Sitemap.** Every child page and every listing page from 2 on.
 - **Search.** Listing pages are indexed like the hub page, whose card text is
@@ -138,7 +138,8 @@ content. No child page is listed twice because of paging.
   with `kind: "Listing"`, `listing_of` (the hub), `page` and `of` (the page
   count). The records come after the docs records and before any OpenAPI
   records. `/api/pages/<hub>/page/<n>.json` adds `children`, the slug, title and
-  URL of each page that listing page shows. A hub the agent API leaves out, by
+  URL of each page that listing page shows (the `ListingChild` type in the
+  toolkit's agent API contract, `src/lib/contract.ts`). A hub the agent API leaves out, by
   its section's `feeds` or its own `agent.discoverable: false`, has no listing
   records.
 - **`llms.txt`.** One line per listing page, right after the hub's own line:
@@ -146,6 +147,10 @@ content. No child page is listed twice because of paging.
   ```text
   - [Missions, page 2](https://example.com/missions/page/2/): children 51–100 of 120
   ```
+
+- **Not in the feeds.** The RSS feed and the per-page Atom entries carry no
+  listing pages, by design: a listing page is a slice of its hub, not a dated
+  page with news of its own. The pages it lists are in the feeds as before.
 
 The build identity (`buildId`) covers the listing, so a changed page size
 changes it.
@@ -163,6 +168,11 @@ starts with `/<hub>/page/` stops the build:
 Rename the page, or raise the hub's page size or cap so the hub is not paged.
 The check ignores case, because routes do.
 
+The check counts every page the toolkit publishes, by its `doc_status`. A page
+with Starlight's `draft: true` but `doc_status: active` is not built in
+production, yet it still stops the build. This is deliberate: the build fails
+loudly rather than guess. Give the page `doc_status: draft`, or rename it.
+
 ## Translate the pagination
 
 The pagination's words are Starlight UI strings with English defaults. Translate
@@ -178,6 +188,21 @@ them as you translate any UI string:
 
 `{page}` and `{title}` are replaced. A key a locale does not translate falls back
 to English. The agent API and `llms.txt` always use the English title.
+
+## Translated sites
+
+A locale is paged where it has its own translated hub index, over its cap. Its
+listing pages list that locale's own pages, so each locale pages to its own
+depth: English can have `/missions/page/4/` while French stops at
+`/fr/missions/page/3/`.
+
+A listing page's alternate-language links, the `hreflang` links in its head and
+the language picker, name only the listing pages that are built. English
+`/missions/page/4/` has no French alternate, and English `/missions/page/2/`
+keeps its French one. When the default locale has no listing page at that
+number, the `x-default` link is dropped too. This is the operator's ruling,
+recorded on [#342](https://github.com/spec-kitty/doc-kitty/issues/342#issuecomment-7155320882). The build removes those links from the built listing
+pages; no other page is touched.
 
 ## Sites with their own sidebar
 
@@ -226,7 +251,11 @@ An invalid page size passed to these functions throws a `RangeError`.
 
 - **Locales.** A locale is paged only where it has its own translated hub index.
   Its listing pages list that locale's own pages; fallback pages from the
-  default locale are not listed.
+  default locale are not listed. See [Translated sites](#translated-sites).
+- **The hub data files are not pruned.** Each build writes its hub data to
+  `<cacheDir>/doc-kitty-hubs/<hash>.hubs.json` (by default under
+  `node_modules/.astro/`). Nothing deletes old ones; they are small, and clearing
+  the cache folder removes them.
 - **No dynamic listing yet.** There is no "load more", sorting or filtering on
   the listing. That is planned in #343.
 - **`llms.txt` lists every page.** A summary mode that lists a large hub and an

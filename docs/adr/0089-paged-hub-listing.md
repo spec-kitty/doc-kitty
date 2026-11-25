@@ -1,8 +1,8 @@
 ---
 title: "ADR-0089: Paged hub listings, included in every surface"
-description: A hub over its sidebar child cap lists its pages across static listing pages. The listing pages are mounted by the toolkit, framed by Starlight, and listed once in every surface.
+description: A hub over its sidebar child cap lists its pages across static listing pages, mounted by the toolkit, framed by Starlight, and listed once in every surface but the feeds.
 doc_status: active
-updated: 2026-11-24T00:00:00Z
+updated: 2026-11-25T00:00:00Z
 type: ADR
 kind: ADR
 authors:
@@ -62,13 +62,17 @@ are for human navigation ease purposes, not as a means to hide content."
    Page 1 is the hub page itself. Each listing page has the hub's title with its
    page, a self canonical, no Starlight previous and next links, and a labelled
    pagination `<nav>` that ships no script.
-5. **Listing pages appear in every surface, each exactly once.** The sitemap and
+5. **Listing pages appear in every surface but the feeds, each exactly once.**
+   The sitemap and
    the search index take them from the built pages. The agent API adds one
    `kind: "Listing"` record per listing page, after the docs records and before
    the OpenAPI records, with a per-page artifact that lists its children.
    `llms.txt` adds one line per listing page after its hub's line. A child page
    is never listed twice because of paging. A hub the agent API leaves out lists
-   no listing pages there. The build identity covers the listing.
+   no listing pages there. The build identity covers the listing. The RSS feed
+   and the per-page Atom entries are the exception: they carry no listing pages,
+   because a listing page is a slice of its hub, not a dated page with news of
+   its own. The pages it lists are in the feeds as before.
 6. **The routes get the hub data through a file.** The agent API and `llms.txt`
    cannot import the virtual module. The route-shaping integration writes the
    data to a content-addressed file under Astro's `cacheDir`, and
@@ -78,7 +82,21 @@ are for human navigation ease purposes, not as a means to hide content."
 7. **A `page` child of a paged hub stops the build.** Any routed page under the
    hub whose route is `/<hub>/page` or starts with `/<hub>/page/` would collide
    with the listing URLs, compared without case.
-8. **Unpaged sites do not change.** A site with no paged hub builds the same
+8. **Locales follow #341** (the operator's ruling). A locale is paged where it
+   has its own translated hub index over its cap, and its listing pages list
+   that locale's own pages; fallback pages from the default locale are not
+   listed. Each locale pages to its own depth.
+9. **Alternates name only built listing pages** (the operator's ruling of
+   2026-11-25, [recorded on #342](https://github.com/spec-kitty/doc-kitty/issues/342#issuecomment-7155320882)). Because locales page to different
+   depths, Starlight's hreflang links and language picker could name a locale
+   listing page that was never built. On a listing page they keep only the
+   locale listing pages that are built; `x-default` is dropped too when the
+   default locale's listing page is not built. The picker takes its options from
+   the locale config, and the components map is fixed at the six carriers
+   (ADR-0015), so the route-shaping integration removes those links from the
+   built listing pages in `astro:build:done`, against the list of built pages.
+   No other page is read.
+10. **Unpaged sites do not change.** A site with no paged hub builds the same
    HTML and CSS as before: the route is not mounted, and the pagination's styles
    are an inline `<style>` emitted only with the pagination.
 
@@ -99,15 +117,31 @@ are for human navigation ease purposes, not as a means to hide content."
   as they already include the hub page.
 - The hub data is computed in more than one place during a build, from the same
   inputs.
+- Nothing prunes the hub data files (`<cacheDir>/doc-kitty-hubs/*.hubs.json`).
+  Old ones stay until the cache folder is cleared, as the `DK_OPENAPI`
+  publication files do.
+- A page with Starlight `draft: true` and `doc_status: active` is not built in
+  production, yet it trips the `page` collision check of decision 7. The check
+  fails loudly rather than guess.
+- On a listing page, a locale without a built listing page at that number has no
+  alternate link at all, not a link to its hub page.
 
 ### Risks
 
-- Locales: a locale is paged only where it has its own hub index, and its
-  listing pages list only that locale's pages. Fallback pages are not listed.
 - A consumer integration that rewrites built HTML must keep the pagination's
   inline style intact for the strict-CSP hash to match.
 
 ## Alternatives considered
+
+### Fallback listing pages for every locale
+
+Rejected by the operator (decision 9). They would add URLs to every surface and
+show the default locale's pages under the locale's URLs.
+
+### Pointing a missing alternate at the locale's hub page
+
+Rejected by the operator (decision 9). The `hreflang` link would then name
+different content.
 
 ### Paging by query string (`?page=2`)
 
