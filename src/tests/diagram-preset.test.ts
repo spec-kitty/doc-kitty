@@ -34,7 +34,11 @@ import diagramMeta from '../lib/remark/diagram-meta.js';
 import plantumlMeta from '../lib/remark/plantuml-meta.js';
 import diagramFigure from '../lib/rehype/diagram-figure.js';
 import diagramLabelContrast from '../lib/rehype/diagram-label-contrast.js';
-import { DIAGRAM_LABEL_FONT_STACK, pinDiagramLabelFont } from '../lib/integrations/diagrams.js';
+import {
+  DIAGRAM_LABEL_FONT_STACK,
+  MERMAID_DEFAULT_SECURE,
+  pinDiagramLabelFont,
+} from '../lib/integrations/diagrams.js';
 import {
   sentinelThemeRewrite,
   BUILD_MERMAID_OPTS,
@@ -202,7 +206,14 @@ describe('defineDocKittyIntegrations diagrams preset (opt-in, FR-001)', () => {
     expect(BUILD_MERMAID_OPTS).toMatchObject({
       strategy: 'inline',
       // The render page measures labels in the pinned font (#370).
-      mermaidConfig: { theme: 'base', securityLevel: 'strict', fontFamily: DIAGRAM_LABEL_FONT_STACK },
+      mermaidConfig: {
+        theme: 'base',
+        securityLevel: 'strict',
+        fontFamily: DIAGRAM_LABEL_FONT_STACK,
+        // Ruling B: an author directive cannot set the label font (#370); Mermaid's
+        // own secure keys stay secure, and nothing else is added.
+        secure: [...MERMAID_DEFAULT_SECURE, 'fontFamily'],
+      },
     });
     expect(rehype[1]).toBe(sentinelThemeRewrite);
     expect(rehype[2]).toBe(pinDiagramLabelFont);

@@ -243,9 +243,14 @@ export const SENTINEL_THEME_VARIABLES: Readonly<Record<string, string>> = {
  * certain: the baked SVG then carries no label `font-family`, so the site shows the
  * labels in its own, wider sans font.
  *
- * The render page measures labels in the renderer's configured `fontFamily`, which
- * {@link BUILD_MERMAID_CONFIG} sets to this stack. An author directive does not move
- * that measurement (checked with the author's font installed on the build machine).
+ * The render page measures labels in the configured `fontFamily`, which
+ * {@link BUILD_MERMAID_CONFIG} sets to this stack. An author `%%{init}%%` (or
+ * front-matter `config`) that sets `fontFamily` would otherwise move that measurement
+ * to the author's font while the site shows the Arial stack, so a narrower author
+ * font clips the label. {@link BUILD_MERMAID_CONFIG} therefore lists `fontFamily` as a
+ * `secure` key: Mermaid drops it from every directive, at any depth
+ * (`themeVariables.fontFamily` included), and keeps every other directive value.
+ * `classDef`/`style` fonts are not directives and are untouched (#412).
  * {@link pinDiagramLabelFont} writes {@link labelFontRule} into each baked SVG's own
  * `<style>`, scoped to its id, with `!important` so neither an author directive nor a
  * site rule can change the display font. Inside the SVG the rule travels with the
@@ -265,12 +270,26 @@ export { cssEscapeId };
 export const labelFontRule = (scope: string): string =>
   `${scope} foreignObject,${scope} foreignObject *{font-family:${DIAGRAM_LABEL_FONT_STACK}!important}`;
 
+/** Mermaid 11.17.1's default `secure` list: config keys a site directive may not
+ * set. Setting `secure` replaces the list, so it is restated in full. */
+export const MERMAID_DEFAULT_SECURE = [
+  'secure',
+  'securityLevel',
+  'startOnLoad',
+  'maxTextSize',
+  'suppressErrorRendering',
+  'maxEdges',
+] as const;
+
 /** The `mermaidConfig` handed to `@beoe/rehype-mermaid` in build mode: the
  * `base` theme, `securityLevel: 'strict'` (client-parity), and the full sentinel
  * `themeVariables`. */
 export const BUILD_MERMAID_CONFIG = {
   theme: 'base',
   securityLevel: 'strict',
+  // Mermaid's defaults plus `fontFamily` (#370, ruling B): an author directive can
+  // neither show nor measure labels in another font. See DIAGRAM_LABEL_FONT_STACK.
+  secure: [...MERMAID_DEFAULT_SECURE, 'fontFamily'],
   // The label font (#370), stated here rather than left to the renderer's default,
   // so the render page measures in the font `pinDiagramLabelFont` displays.
   fontFamily: DIAGRAM_LABEL_FONT_STACK,
@@ -327,6 +346,10 @@ export const BUILD_SVGO_CONFIG = {
           removeTitle: false,
           removeDesc: false,
           cleanupIds: false,
+          // inlineStyles moves a CSS rule that matches one element into its style
+          // attribute and drops the class. In a one-edge flowchart that strips
+          // `flowchart-link`, which the edge-colour pass keys on (#369).
+          inlineStyles: false,
         },
       },
     },
