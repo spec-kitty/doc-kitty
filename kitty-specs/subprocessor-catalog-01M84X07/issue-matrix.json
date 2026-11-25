@@ -60,6 +60,18 @@
       "verdict": "not-applicable",
       "wp": null
     },
+    "#455": {
+      "evidence_ref": "Context only: PR #455 brings the ADR-0087 source_digest/D3 machinery that follow-up #461 will reuse; no work owed in this mission",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": "feat(#401): an evidence index of the measures pages classify (TOM annex export)",
+      "verdict": "not-applicable",
+      "wp": null
+    },
     "#461": {
       "evidence_ref": "Follow-up for the deferred FR-017 (operator ruling option B, #403 comment 7162823706); no work owed in this mission",
       "fr": null,
