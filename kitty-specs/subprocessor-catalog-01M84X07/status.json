@@ -91,6 +91,9 @@
       "last_event_id": "01M88W80WSVCDK34XNNBQXH6P8",
       "last_transition_at": "2026-11-25T08:13:08.377378+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Gate wired to checkSubprocessorCatalog; 7 tests incl. 200-record budget; full pnpm test green"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 24848,
