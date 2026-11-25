@@ -148,7 +148,7 @@
     },
     "WP05": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::node-norris",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -157,7 +157,8 @@
       "last_transition_at": "2026-11-25T11:03:15.830410+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Integration, routes, index links; parity over 12 catalogs; fixture build proves additive-only output; full pnpm test green"
+        "Integration, routes, index links; parity over 12 catalogs; fixture build proves additive-only output; full pnpm test green",
+        "Review cycle 1: F1 byte equality vs renderers + genuine rebuild; F2 mask comment; full pnpm test green"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
