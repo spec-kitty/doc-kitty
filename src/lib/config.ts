@@ -156,6 +156,21 @@ export interface DocKittySidebarOptions {
 /** The keys of the object form of `sidebar`, as error messages list them. */
 const SIDEBAR_KEYS = 'indexLabel, collapsed, titleIsIndex, childCap or cappedLabel';
 
+/** Validate the `hub` option (#342) eagerly, so a bad value throws before any hook runs. */
+function parseHubOption(hub: DocKittyOptions['hub']): { pageSize: number | undefined } {
+  if (hub === undefined) return { pageSize: undefined };
+  if (hub === null || typeof hub !== 'object' || Array.isArray(hub)) {
+    throw new Error('[dk-config] hub must be a mapping');
+  }
+  const { pageSize, ...unknown } = hub as { pageSize?: unknown } & Record<string, unknown>;
+  const [extra] = Object.keys(unknown);
+  if (extra !== undefined) throw new Error(`[dk-config] unknown key "${extra}" under hub; expected pageSize`);
+  if (pageSize !== undefined && !isChildCap(pageSize)) {
+    throw new Error('[dk-config] hub.pageSize must be a positive whole number');
+  }
+  return { pageSize: pageSize as number | undefined };
+}
+
 /**
  * Split the `sidebar` option into the consumer's Starlight sidebar (array) and
  * the generated-sidebar options (object), validating the latter eagerly.
@@ -242,6 +257,13 @@ export interface DocKittyOptions {
    * page (default `false`), and setting it with `indexLabel` throws.
    */
   sidebar?: StarlightUserConfig['sidebar'] | DocKittySidebarOptions;
+  /**
+   * Hub settings (#342). `pageSize` is the listing page size of every hub over
+   * its sidebar child cap: such a hub lists that many children on its own page
+   * and the rest on `/<hub>/page/N/`. A positive whole number; default 50. A
+   * section's `hub.pageSize` and a hub's `hub_page_size` frontmatter win over it.
+   */
+  hub?: { pageSize?: number };
   /**
    * Directory (relative to the site root) holding the Common Docs tree — the
    * source of truth for which pages are drafts. Defaults to the convention's
@@ -627,6 +649,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     description,
     social,
     sidebar: sidebarOption,
+    hub: hubOption,
     docsDir = 'docs',
     base = '/',
     theme,
@@ -648,6 +671,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   } = options;
   const { starlightSidebar: sidebar, indexLabel, childCap, cappedLabel, chrome: sidebarChrome } =
     splitSidebarOption(sidebarOption);
+  const { pageSize } = parseHubOption(hubOption);
 
   // The page-chrome options: validated EAGERLY, so a bad value throws before any hook
   // runs, and published for the carriers and routes, which must not import this
@@ -830,6 +854,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     ...(indexLabel ? { indexLabel } : {}),
     ...(childCap !== undefined ? { childCap } : {}),
     ...(cappedLabel ? { cappedLabel } : {}),
+    ...(pageSize !== undefined ? { pageSize } : {}),
   };
 
   const starlightConfig: StarlightUserConfig = {
