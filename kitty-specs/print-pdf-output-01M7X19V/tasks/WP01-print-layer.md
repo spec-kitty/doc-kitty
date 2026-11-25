@@ -106,11 +106,11 @@ One `@media print` block plus `@page { size: A4; margin: 18mm 16mm; }` (outside 
 
 ### T003 Force-light hook
 
-`src/lib/print/print.client.ts` imports `../../styles/print.css` and `virtual:doc-kitty/print-tokens.css`. On `beforeprint`: remember `document.documentElement.dataset.theme`, set `light` (only if not already), never touch `localStorage`. On `afterprint`: restore. Independent of the disclosure handler (different state, no shared listener). Before forcing light it sets `data-dk-printing` on `<html>` and clears it one task after `afterprint` (D-03a). Loaded from `PageTitle.astro` with `<script>import '../lib/print/print.client.ts';</script>`.
+`src/lib/print/print.client.ts` imports `../../styles/print.css` and `virtual:doc-kitty/print-tokens.css`. On `beforeprint`: remember `document.documentElement.dataset.theme`, set `light` (only if not already), never touch `localStorage`. On `afterprint`: restore. Independent of the disclosure handler (different state, no shared listener). Before forcing light it sets `data-dk-printing` on `<html>` and clears it one task after `afterprint` (D-03a). Loaded from `PageTitle.astro` with `<script>import '../lib/print/print.client.ts';</script>`. *(Superseded 2026-11-25: the layer is opt-in and loaded by `PrintLayer.astro` through the manifest; see research.md "Rework for SC-004".)*
 
 ### T004 Diagram completion signal
 
-In `diagram-render.client.ts` `render()`'s `.finally`, when no pending scope remains, set `document.documentElement.setAttribute('data-dk-diagram-theme', currentTheme)` where `currentTheme` is `document.documentElement.dataset.theme ?? 'light'` captured when the run started. The `[data-theme]` observer returns early while `<html>` has `data-dk-printing`, so a browser print never snapshots a node reset to its Mermaid source (D-03a).
+In `diagram-render.client.ts` `render()`'s `.finally`, when no pending scope remains, set `document.documentElement.setAttribute('data-dk-diagram-theme', currentTheme)` where `currentTheme` is `document.documentElement.dataset.theme ?? 'light'` captured when the run started. The `[data-theme]` observer returns early while `<html>` has `data-dk-printing`, so a browser print never snapshots a node reset to its Mermaid source (D-03a). *(Superseded 2026-11-25, see research.md "Rework for SC-004": the renderer carries no signal or pause; `dockitty-pdf` waits on `pre.mermaid[data-processed]` holding an `<svg>`, and the hook skips pages with client-mode diagrams.)*
 
 ### T005 Consolidation
 

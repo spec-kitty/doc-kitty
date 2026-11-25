@@ -114,6 +114,7 @@ None opened. The lane stays advisory, as #396 asks (C-004); joining `ci-ok` late
 - **Ruling**: keep the gate (#377, 2026-11-25); the layer is opt-in, new sites start with `print: true` (#377, 2026-11-25).
 - **Decision**: a `print` option, on with `print: true`, `printControl` or any PDF; the manifest exports `PrintLayer` only then (ADR-0075 pattern). The renderer is main's file again. `dockitty-pdf` loads pages light and waits for every laid-out `pre.mermaid` to be `data-processed` and hold an `<svg>`. The hook skips a page with client-mode diagrams; the print-token fallback prints it light.
 - **Rejected**: a compile-time define in the renderer (esbuild dead-code elimination left a different minified file); a fixture opt-out or allowance (relaxes the gate).
+- **Determinism (review of #462)**: client-mode Mermaid jitters its edge paths with `Math.random`, so `dockitty-pdf` seeds it in the page (mulberry32, fixed seed) before any script runs; two client-mode prints are byte-identical again.
 - **Scaffold**: no toolkit scaffold writes an astro config, so "new sites get `print: true`" lands in the consumer-setup starter config.
 
 ## Supply chain

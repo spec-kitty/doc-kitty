@@ -12,7 +12,7 @@ Topology is `single_branch`: the WPs run in order on `feat/print-pdf-output`. `s
 | T001 | `src/styles/print.css`: chrome hiding, surfaces, breaks, link URLs, diagrams, tabs, `@page` | WP01 | |
 | T002 | `emitPrintTokenSheet` + `virtual:doc-kitty/print-tokens.css` | WP01 | [P] |
 | T003 | `print.client.ts` force-light hook, loaded from `PageTitle.astro` | WP01 | |
-| T004 | Client diagram render publishes `data-dk-diagram-theme` | WP01 | [P] |
+| T004 | Client diagram render publishes `data-dk-diagram-theme` (superseded 2026-11-25: renderer left as on main) | WP01 | [P] |
 | T005 | Fold the lightbox print rule; chrome-baseline normaliser for print rules | WP01 | |
 | T006 | Unit tests: print-token emitter, print.css contract | WP01 | |
 | T007 | Playwright print-media spec, both themes | WP01 | |

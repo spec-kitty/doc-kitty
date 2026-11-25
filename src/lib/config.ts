@@ -468,9 +468,9 @@ export interface DocKittyOptions {
    * The page print layer (ADR-0081, #378): print rules that hide the screen chrome and
    * print on white, and a hook that prints a dark-mode page light. Opt-in: on with
    * `print: true`, `printControl: true` or any PDF; off otherwise, so a site that sets
-   * none of them builds exactly what it did before. `dockitty-scaffold` writes
-   * `print: true` for a new site. `print: false` next to a setting that needs the layer
-   * is a config error.
+   * none of them builds exactly what it did before. The starter configuration in the
+   * consumer setup guide sets `print: true`, so a new site starts with it.
+   * `print: false` next to a setting that needs the layer is a config error.
    */
   print?: boolean;
 }

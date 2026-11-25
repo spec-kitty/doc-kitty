@@ -162,7 +162,7 @@ A maintainer opens a PR touching code, example content or workflows. A path-scop
 | ID | Title | Constraint | Category | Priority | Status |
 |----|-------|------------|----------|----------|--------|
 | C-001 | PDF location | PDFs live in `dist/pdf/` and deploy with the site on main only; `/pdf/<section>.pdf` and `/pdf/site.pdf` are public URL contracts. | Business | High | Open |
-| C-002 | Opt-in | Section PDFs are opt-in per section; the whole-site PDF is opt-in at site level; the print layer is opt-in (`print`, also on with `printControl` or any PDF), and new sites start with `print: true` in the starter config. A site that opts into none of them builds byte for byte what it built before (SC-004). Amended by the operator rulings of 2026-11-25 on #377. | Business | High | Open |
+| C-002 | Opt-in | Section PDFs are opt-in per section; the whole-site PDF is opt-in at site level; the print layer is opt-in (`print`, also on with `printControl` or any PDF), and new sites start with `print: true` in the starter config. A site that opts into none of them builds byte for byte what it built before (the consumption test's SC-004 arm A, not this spec's SC-004). Amended by the operator rulings of 2026-11-25 on #377. | Business | High | Open |
 | C-003 | Not a manuscript type | The whole-site PDF adds no book or manuscript content type; that plan stays *Won't*. | Business | High | Open |
 | C-004 | Lane advisory | The PDF lane is not added to `ci-ok`; joining it is an operator decision. | Technical | High | Open |
 | C-005 | Built output only | The PDF lane reads built output only and never runs a generated-section producer (#359). | Technical | High | Open |

@@ -77,7 +77,7 @@ src/
 ├── lib/chrome-options.ts                    EDIT `printControl` option
 ├── lib/config.ts                            EDIT `pdf` option, route integration, env handoffs
 ├── lib/served-surfaces.ts                   EDIT `pdf` record
-├── lib/diagram/diagram-render.client.ts     EDIT publish data-dk-diagram-theme after each render
+├── lib/diagram/diagram-render.client.ts     (superseded 2026-11-25: left as on main)
 ├── components/PageTitle.astro               EDIT load print.client, render PrintControl
 ├── scripts/dockitty-pdf.mjs                 NEW  CLI (bin)
 ├── scripts/pdf-postprocess.mjs              NEW  date pinning + producer incremental update
@@ -118,7 +118,7 @@ Key decisions (full rationale in research.md):
 
 1. **Print sheet delivery**: `print.client.ts` imports `print.css` and `virtual:doc-kitty/print-tokens.css`; `PageTitle.astro` loads the script. Every in-frame page (including the print route, which uses `StarlightPage`) gets it; the deck route does not. No change to `GLOBAL_COMPONENT_SHEETS` or `DeckLayout`.
 2. **Print-token fallback**: `emitPrintTokenSheet(resolved)` writes `@media print { :root:root[data-theme='dark'] { <each mode-varying token: its resolved light value>; color-scheme: light } }` at (0,3,0). Light-theme prints keep brand values; dark prints without the hook get the resolved light palette.
-3. **Diagram completion signal**: the client render sets `data-dk-diagram-theme` on `<html>` to the theme it last finished rendering; the CLI waits for `light` when any `pre.mermaid` exists.
+3. **Diagram completion signal**: the client render sets `data-dk-diagram-theme` on `<html>` to the theme it last finished rendering; the CLI waits for `light` when any `pre.mermaid` exists. *(Superseded 2026-11-25, see research.md "Rework for SC-004": the renderer carries no signal or pause; `dockitty-pdf` waits on `pre.mermaid[data-processed]` holding an `<svg>`, and the hook skips pages with client-mode diagrams.)*
 4. **`pdf` key shape**: `pdf: true | false` or `pdf: { section: boolean, site: main | appendix | omit }`. Site option `pdf: { sections?: boolean, site?: boolean, exclude?: { sections?: string[], kinds?: string[] } }`. Fixed exclusion floor: `kind: Presentation` pages and OpenAPI reference pages (never collection entries).
 5. **Routes**: `/print/<section>/` for each section with its own PDF; `/print/` for the whole site. `noindex`, `pagefind: false`, filtered from the sitemap by a registered predicate. `site` is reserved as a PDF name.
 6. **Headings and outline**: the cover title is the one `<h1>`; section print: page titles `<h2>`, content headings demoted one level; whole-site: section dividers `<h2>`, page titles `<h3>`, content demoted two levels. The gate counts outline entries at the page-title depth.
