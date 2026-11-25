@@ -1,15 +1,15 @@
 {
   "rows": {
     "#359": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Dependency only: delivered by PR #445 (ADR-0087, merged to main); WP07 builds on it, this mission owes #359 no work",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "title": "ADR: a generated-section contract (generated stamp, drift check, producer ownership)",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#400": {
