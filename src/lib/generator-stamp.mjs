@@ -191,12 +191,26 @@ export function makeStamp({ producer, hash, previous, now = new Date() }) {
   const keepAt = unchanged && typeof previous.at === 'string' && normaliseInstant(previous.at) !== null;
   // A kept `by` must be this producer's own stamp with a version-shaped suffix,
   // and moves with `at`; a hand-edited `by` is replaced, as before.
-  const keepBy = keepAt && typeof previous.by === 'string' && STAMP_VERSION.test(previous.by.slice(producer.length + 1)) && isGeneratedStamp(previous.by, producer);
+  const keepBy = keepAt && keepsBy(previous.by, producer);
   return {
     by: keepBy ? /** @type {string} */ (previous.by) : `${producer}/${toolkitVersion()}`,
     at: keepAt ? /** @type {string} */ (previous.at) : formatInstant(now),
     content_hash,
   };
+}
+
+/**
+ * May a previous stamp's `by` be carried over? Only this producer's own stamp
+ * with a version-shaped suffix (`x.y.z`, optionally with a pre-release or build
+ * part); anything else, such as a hand-edited `by`, is written fresh. The one
+ * rule shared by {@link makeStamp} and the evidence index's carry-over (#455).
+ *
+ * @param {unknown} by
+ * @param {string} producer one of {@link PRODUCERS}
+ * @returns {boolean}
+ */
+export function keepsBy(by, producer) {
+  return typeof by === 'string' && isGeneratedStamp(by, producer) && STAMP_VERSION.test(by.slice(producer.length + 1));
 }
 
 /**

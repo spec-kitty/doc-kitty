@@ -14,4 +14,4 @@ section: Added
   site that leaves the option off, or has no published classified page, builds
   nothing new. The new `dockitty-tom-annex`
   command writes an opt-in committed snapshot and hub page and checks them for
-  drift. See [the guide](docs/guides/tom-annex.md).
+  drift, a hand edit to their stamp's `by` included. See [the guide](docs/guides/tom-annex.md).

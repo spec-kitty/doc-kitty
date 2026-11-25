@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { buildTomAnnex, serializeTomAnnex } from '../lib/tom-annex/core.mjs';
-import { checkHub, checkSnapshot } from '../lib/tom-annex/check.mjs';
+import { checkHub, checkSnapshot, hubToWrite, snapshotToWrite } from '../lib/tom-annex/check.mjs';
 import { pageContentHash, renderHubPage } from '../lib/tom-annex/hub-page.mjs';
 import { contentHash, stampAnnex } from '../lib/tom-annex/stamp.mjs';
 import { canonical } from './fixtures/tom-annex/graph.mjs';
@@ -81,6 +81,14 @@ describe('checkSnapshot (WP07 T031)', () => {
     expect(check(committed)).toBe('ok');
   });
 
+  // #455 confirm review F1: the carry-over keeps only a version-shaped `by`,
+  // as makeStamp does; a hand-edited one is stale-render and is rewritten.
+  it.each(['doc-kitty-tom-annex/garbage', 'doc-kitty-tom-annex/ '])('a hand-edited `by` (%j) with unchanged content is stale-render (#455 F1)', (by) => {
+    const committed = serializeTomAnnex(variant((a) => (a.generated.by = by), false));
+    expect(check(committed)).toBe('stale-render');
+    expect(snapshotToWrite(builtText, committed)).toBe(builtText);
+  });
+
   it('masks only generated.at: a different at alone is ok', () => {
     const builtLater = variant((a) => (a.generated.at = '2030-01-01T00:00:00Z'));
     // The committed at must still be the one its own evidence gives, so mask from the built side.
@@ -127,6 +135,13 @@ describe('checkHub (WP07 T031)', () => {
 
   it('a toolkit upgrade with unchanged content is ok: `by` carries over (operator ruling Q7)', () => {
     expect(check(hub.replace(/by: "doc-kitty-tom-annex\/[^"]+"/, 'by: "doc-kitty-tom-annex/0.0.1"'))).toBe('ok');
+  });
+
+  it.each(['doc-kitty-tom-annex/garbage', 'doc-kitty-tom-annex/ '])('a hand-edited `by` (%j) with unchanged content is stale-render (#455 F1)', (by) => {
+    const committed = hub.replace(/by: "doc-kitty-tom-annex\/[^"]+"/, `by: "${by}"`);
+    expect(committed).not.toBe(hub);
+    expect(check(committed)).toBe('stale-render');
+    expect(hubToWrite(base, committed)).toBe(hub);
   });
 
   it('masks only generated.at (and the updated it drives)', () => {

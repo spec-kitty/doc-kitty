@@ -21,8 +21,10 @@
  *   D2) cannot.
  *
  * `by` carries over (operator ruling on #455, the rule `makeStamp` applies
- * since #454): while a file's `content_hash` is unchanged, it keeps the `by` of
- * the stamp already committed, so a toolkit upgrade alone changes nothing.
+ * since #454, through the shared `keepsBy`): while a file's `content_hash` is
+ * unchanged, it keeps the `by` of the stamp already committed, so a toolkit
+ * upgrade alone changes nothing. A `by` that is not version-shaped, such as a
+ * hand edit, is not kept, so it reads as `stale-render`.
  * {@link snapshotToWrite} and {@link hubToWrite} apply the rule for writing,
  * and the checks compare against the same result.
  *
@@ -31,7 +33,7 @@
 
 import matter from 'gray-matter';
 import { isProducerOwnedPage } from '../producer-output.mjs';
-import { isGeneratedStamp } from '../generator-stamp.mjs';
+import { isGeneratedStamp, keepsBy } from '../generator-stamp.mjs';
 import { serializeTomAnnex, TOM_ANNEX_FORMAT } from './core.mjs';
 import { pageContentHash, renderHubPage } from './hub-page.mjs';
 import { annexInstant, contentHash, TOM_ANNEX_PRODUCER } from './stamp.mjs';
@@ -57,15 +59,16 @@ export function isOwnedSnapshot(annex) {
 }
 
 /**
- * The committed `by` when the committed file is this producer's and has the
- * same `content_hash`, else the built one.
+ * The committed `by` when the committed file has the same `content_hash` and
+ * its `by` is one {@link keepsBy} keeps (this producer's, version-shaped), else
+ * the built one. A hand-edited `by` is therefore not carried over.
  *
  * @param {any} committedStamp
  * @param {string} contentHash the new content hash
  * @param {string} builtBy
  */
 function carriedBy(committedStamp, contentHash, builtBy) {
-  return committedStamp?.content_hash === contentHash && isGeneratedStamp(committedStamp?.by, TOM_ANNEX_PRODUCER)
+  return committedStamp?.content_hash === contentHash && keepsBy(committedStamp?.by, TOM_ANNEX_PRODUCER)
     ? committedStamp.by
     : builtBy;
 }

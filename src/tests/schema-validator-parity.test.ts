@@ -10,7 +10,7 @@ import {
   isGeneratedPage,
 } from '../scripts/validate-frontmatter.mjs';
 import { parseActor, isActor, normaliseInstant, parseRequiredFields } from '../lib/vocabulary-core.mjs';
-import { GHERKIN_PRODUCER, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
+import { GHERKIN_PRODUCER, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, keepsBy, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
@@ -843,6 +843,26 @@ describe('generator-stamp (#177, FR-008, C-004)', () => {
         at: '2026-01-01T00:00:00Z',
         content_hash: previous.content_hash,
       });
+    }
+  });
+
+  // #455 confirm review F1: one predicate decides whether a previous `by` may be
+  // kept, so every producer that carries `by` over applies the same rule.
+  it('keepsBy accepts only this producer\'s own stamp with a version-shaped suffix (#455 F1)', () => {
+    for (const by of ['doc-kitty-gherkin/0.0.1', 'doc-kitty-gherkin/0.2.0-rc.1', 'doc-kitty-gherkin/1.0.0+build.5']) {
+      expect(keepsBy(by, 'doc-kitty-gherkin'), by).toBe(true);
+    }
+    for (const by of [
+      'doc-kitty-glossary/0.0.1',
+      'doc-kitty-gherkin/',
+      'doc-kitty-gherkin/ ',
+      'doc-kitty-gherkin/garbage',
+      'doc-kitty-gherkin/0.7',
+      'doc-kitty-gherkinx/0.0.1',
+      undefined,
+      42,
+    ]) {
+      expect(keepsBy(by, 'doc-kitty-gherkin'), String(by)).toBe(false);
     }
   });
 });
