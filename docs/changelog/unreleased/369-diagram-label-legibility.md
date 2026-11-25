@@ -20,7 +20,8 @@ section: Fixed
 - **Build-time Mermaid labels are no longer cut off (#370).** Before, a diagram
   that set its own font in an `%%{init}%%` directive was drawn in the site's
   font, which is wider than the font its label boxes were measured in, so long
-  labels were clipped. Now, build-rendered Mermaid HTML labels are drawn in one
-  Arial-metric font (Arial, Helvetica, Liberation Sans or Arimo), and measured
-  in it unless an `%%{init}%%` font is set. A font set on one node with
-  `classDef` or `style` is kept.
+  labels were clipped. Now, build-rendered Mermaid HTML labels are measured and
+  drawn in one Arial-metric font (Arial, Helvetica, Liberation Sans or Arimo).
+  An `%%{init}%%` `fontFamily` is neither shown nor used for measurement. A font
+  set in author CSS (`classDef`, `style` or an `%%{init}%%` `themeCSS` rule) is
+  kept and can still overflow (#412). Sequence diagram font keys are #458.
