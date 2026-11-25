@@ -30,6 +30,9 @@ kitty-specs/**/decisions/index.json merge=spec-kitty-decision-index
 # A page classified with tom_classification is added here; a test checks it.
 example/docs/_meta/tom-annex.snapshot.json text eol=lf
 example/docs/context/evidence-index/index.md text eol=lf
+# Pre-emptive: the example has no consumer catalog and uses the shipped default,
+# which is digested as parsed records. A measures.yaml added here would be a D2
+# file input, so its path is pinned in advance.
 example/docs/_meta/measures.yaml text eol=lf
 example/docs/architecture/audit-logging.md text eol=lf
 example/docs/context/incident-handling.md text eol=lf
