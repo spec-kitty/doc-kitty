@@ -139,9 +139,9 @@
       "shell_pid": null,
       "shell_pid_created_at": null,
       "subtasks": {
-        "T010": "planned",
-        "T011": "planned",
-        "T012": "planned"
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
       },
       "tracker_refs": [
         "spec-kitty/doc-kitty#369",
