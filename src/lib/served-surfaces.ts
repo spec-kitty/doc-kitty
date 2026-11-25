@@ -15,6 +15,9 @@ const SURFACE_ROUTES = {
   scenarios: '/api/scenarios.json',
   contentGraph: '/api/content-graph.json',
   pageAtom: '/api/pages/[...slug].atom.xml',
+  // Injected only when the site has a sub-processor catalog (ADR-0086).
+  subprocessors: '/api/subprocessors.json',
+  subprocessorFeed: '/subprocessors.xml',
 } as const;
 
 export type ServedSurfaces = Record<keyof typeof SURFACE_ROUTES, boolean> & {
