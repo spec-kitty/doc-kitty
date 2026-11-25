@@ -1,19 +1,19 @@
 {
-  "event_count": 73,
-  "last_event_id": "01M89V3YCZ8KJW3NE9HYN2TDMP",
-  "materialized_at": "2026-11-25T17:12:40.607114+00:00",
+  "event_count": 74,
+  "last_event_id": "01M89V6YN8KB22BXEPVRVR4FFB",
+  "materialized_at": "2026-11-25T17:14:19.176120+00:00",
   "mission_number": "",
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 2,
+    "approved": 3,
     "blocked": 0,
     "canceled": 1,
     "claimed": 0,
     "done": 0,
     "for_review": 3,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 0
   },
   "work_packages": {
@@ -88,9 +88,9 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "in_review",
-      "last_event_id": "01M89V3YCZ8KJW3NE9HYN2TDMP",
-      "last_transition_at": "2026-11-25T17:12:40.607114+00:00",
+      "lane": "approved",
+      "last_event_id": "01M89V6YN8KB22BXEPVRVR4FFB",
+      "last_transition_at": "2026-11-25T17:14:19.176120+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Gate wired to checkSubprocessorCatalog; 7 tests incl. 200-record budget; full pnpm test green",
@@ -100,9 +100,8 @@
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/subprocessor-catalog-01M84X07-coord/kitty-specs/subprocessor-catalog-01M84X07/tasks/WP03-build-free-gate/review-cycle-1.md",
-        "reference": "review-cycle://subprocessor-catalog-01M84X07/WP03-build-free-gate/review-cycle-1.md",
-        "reviewer": "claude::reviewer-renata",
+        "reference": "auto-approval:WP03:20261125",
+        "reviewer": "Claude",
         "verdict": "approved"
       },
       "role": "reviewer",
