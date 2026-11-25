@@ -15,11 +15,12 @@ section: Fixed
   Before, a flowchart edge colour the author set (an `%%{init}%%` `lineColor` or a `linkStyle`)
   stayed fixed, so a dark one nearly vanished on the dark page. Now, each edge
   and its arrowhead keep the author's colour in a theme where it clears 3:1 on
-  every page and subgraph surface, and take the theme's edge colour where it
-  does not.
+  the toolkit's page and subgraph surfaces, and take the theme's edge colour
+  where it does not.
 - **Build-time Mermaid labels are no longer cut off (#370).** Before, a diagram
   that set its own font in an `%%{init}%%` directive was drawn in the site's
   font, which is wider than the font its label boxes were measured in, so long
-  labels were clipped. Now, build-rendered Mermaid HTML labels are measured and
-  drawn in one Arial-metric font (Arial, Helvetica, Liberation Sans or Arimo),
-  unless a `classDef` or `style` sets a font on that node.
+  labels were clipped. Now, build-rendered Mermaid HTML labels are drawn in one
+  Arial-metric font (Arial, Helvetica, Liberation Sans or Arimo), and measured
+  in it unless an `%%{init}%%` font is set. A font set on one node with
+  `classDef` or `style` is kept.
