@@ -156,6 +156,9 @@
       "last_event_id": "01M893REXWPN8N0E8RRNN6VTVK",
       "last_transition_at": "2026-11-25T10:24:27.068575+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Integration, routes, index links; parity over 12 catalogs; fixture build proves additive-only output; full pnpm test green"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 196,
