@@ -117,7 +117,8 @@
       "last_transition_at": "2026-11-25T09:16:25.656891+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Pure API/feed renderers; 15 tests incl. byte stability; full pnpm test green"
+        "Pure API/feed renderers; 15 tests incl. byte stability; full pnpm test green",
+        "Review cycle 1: TZ byte-stability test added (kills local-midnight pubDate mutant)"
       ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
