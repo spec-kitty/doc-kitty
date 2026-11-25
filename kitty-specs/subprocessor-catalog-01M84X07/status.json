@@ -1,19 +1,19 @@
 {
-  "event_count": 73,
-  "last_event_id": "01M89V42ACKRHK16B3KBWHR6BK",
-  "materialized_at": "2026-11-25T17:12:44.620498+00:00",
+  "event_count": 74,
+  "last_event_id": "01M89V61ZWA2HEW34A4WA0EFED",
+  "materialized_at": "2026-11-25T17:13:49.820514+00:00",
   "mission_number": "",
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 2,
+    "approved": 3,
     "blocked": 0,
     "canceled": 1,
     "claimed": 0,
     "done": 0,
     "for_review": 3,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 0
   },
   "work_packages": {
@@ -121,9 +121,9 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 3,
-      "lane": "in_review",
-      "last_event_id": "01M89V42ACKRHK16B3KBWHR6BK",
-      "last_transition_at": "2026-11-25T17:12:44.620498+00:00",
+      "lane": "approved",
+      "last_event_id": "01M89V61ZWA2HEW34A4WA0EFED",
+      "last_transition_at": "2026-11-25T17:13:49.820514+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Pure API/feed renderers; 15 tests incl. byte stability; full pnpm test green",
@@ -135,9 +135,8 @@
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/subprocessor-catalog-01M84X07-coord/kitty-specs/subprocessor-catalog-01M84X07/tasks/WP04-api-and-feed-renderers/review-cycle-2.md",
-        "reference": "review-cycle://subprocessor-catalog-01M84X07/WP04-api-and-feed-renderers/review-cycle-2.md",
-        "reviewer": "claude::reviewer-renata",
+        "reference": "auto-approval:WP04:20261125",
+        "reviewer": "Claude",
         "verdict": "approved"
       },
       "role": "reviewer",
