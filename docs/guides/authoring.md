@@ -2,7 +2,7 @@
 title: Authoring a document
 description: Create a page that satisfies DocKitty, write Gherkin behaviour specs that publish as Specification pages, show scenarios in any page, and show their test results.
 doc_status: active
-updated: 2026-11-22T00:00:00Z
+updated: 2026-11-24T00:00:00Z
 type: Guide
 kind: How-To
 tags: [authoring, workflow, gherkin, bdd]
@@ -108,7 +108,10 @@ not maintain a navigation file.
   child cap (default 50), a folder whose index page has `kind: Hub` shows its
   index link and one "N pages" entry to the hub, which lists the pages. Set `sidebar_child_cap` on the index
   page to change the cap for that hub; see
-  [Cap large sidebar groups](./sidebar-child-cap.md).
+  [Cap large sidebar groups](./sidebar-child-cap.md). Such a hub with more pages
+  than its page size (default 50) lists them across `/<hub>/page/2/` onwards; set
+  `hub_page_size` on the index page to change it for that hub, see
+  [Page large hub listings](./paged-hub-listing.md).
 - **Top-level groups** come from the section registry
   (`docs/_meta/sections.yaml`): their label and order are set there, not by an
   index page.
