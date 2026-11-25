@@ -1,15 +1,15 @@
 {
   "rows": {
     "#359": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Dependency only: FR-017/WP07 gated on PR #445 merging (C-004); no work owed by this mission",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "title": "Generated-section contract (ADR-0087)",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#400": {
