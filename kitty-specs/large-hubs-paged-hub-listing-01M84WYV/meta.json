@@ -29,6 +29,7 @@
   "purpose_context": "Slice 2 of the large-hubs epic (#340), issue #342. Slice 1 (#341) caps a large hub's sidebar group to its overview link plus one 'N pages' entry that leads to the hub. This mission makes the hub page itself bounded: it renders the first page of children and links static /<hub>/page/N/ pages in the Starlight frame through an accessible pagination nav. Paged URLs are self-canonical and kept out of the sitemap, and the link gate and agent surfaces stay green.",
   "purpose_tldr": "A hub over its sidebar child cap lists its children across static, server-rendered pages, so every child is reachable without scripts.",
   "slug": "large-hubs-paged-hub-listing-01M84WYV",
+  "status_phase": "1",
   "target_branch": "feat/342-paged-hub-listing",
   "topology": "lanes_with_coord",
   "topology_decision": {
