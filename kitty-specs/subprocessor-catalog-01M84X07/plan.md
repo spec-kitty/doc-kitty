@@ -19,15 +19,16 @@ epic #400).
 - **Index links.** Served-surface detection finds the two routes, and the agent
   index links them.
 - **Records ADR.** ADR-0086 records the catalog.
-- **Generated page.** The page follows ADR-0087 and is the last work package,
-  blocked until PR #445 merges.
+- **Generated page.** Deferred to follow-up #461 (operator ruling, option B,
+  2026-11-25): it follows ADR-0087 and reuses the `source_digest` and D3 machinery
+  that #455 introduces.
 
 Planning decisions:
 
 | Decision | Outcome | Decider |
 |----------|---------|---------|
 | DM `01M8545YJX3DY4G3DEYX81G49Y`: build failure point | Fail at `astro:config:setup` in a file-gated integration, with one aggregate error. Routes are injected only when the file exists. | Operator (relayed by the dispatcher) |
-| Engineering alignment | Pure core plus a bare-Node loader. The caller passes in the bibliography and measures ids. ISO alpha-2 list embedded. RSS reuses `rss.ts` helpers. WP01–WP05, with WP05 gated on #445. | Operator (relayed by the dispatcher) |
+| Engineering alignment | Pure core plus a bare-Node loader. The caller passes in the bibliography and measures ids. ISO alpha-2 list embedded. RSS reuses `rss.ts` helpers. WP01–WP05, with WP05 gated on #445. The generated page was later deferred to #461. | Operator (relayed by the dispatcher) |
 
 ## Technical Context
 
@@ -160,11 +161,11 @@ and the gherkin injected-route precedent (`integrations/gherkin.ts`).
 - **Risks**:
   - The example records must be obviously fictional (`.example` domains, invented names).
 
-### IC-05 — Generated list page (gated)
+### IC-05 — Generated list page (deferred to #461)
 
 - **Purpose**: A generated page listing current and past sub-processors, stamped and drift-checked.
 - **Relevant requirements**: FR-017
 - **Affected surfaces**: to be fixed against ADR-0087 as merged: the generator script, the page under the example docs, and the `--check` gate.
-- **Sequencing/depends-on**: IC-01; external: PR #445 merged to `main` (C-004)
+- **Sequencing/depends-on**: IC-01; external: #455 merged to `main` (C-004). Deferred to follow-up #461; WP07 is canceled in this mission.
 - **Risks**:
   - The current-vs-past split needs a reference date. It must follow ADR-0087's masking rules (`at`), not the raw build clock.

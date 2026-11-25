@@ -9,8 +9,8 @@ prerendered.
   <channel>
     <title>{site title}: sub-processor changes</title>
     <link>https://site.example/</link>
+    <atom:link href="https://site.example/subprocessors.xml" rel="self" type="application/rss+xml" />
     <description>Additions and removals of sub-processors, including announced future changes.</description>
-    <atom:link href="https://site.example/subprocessors.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>Added: Beta Mail Ltd</title>
       <link>https://site.example/api/subprocessors.json</link>
