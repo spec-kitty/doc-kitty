@@ -151,16 +151,22 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
   the accessible name into the SVG (`<title>`/`<desc>`); the same `diagram-figure`
   wraps it in `<figure role="group" aria-labelledby>` + `<figcaption>`.
 - **Labels fit their box and stay readable (#369, #370).**
-  - *Font.* Mermaid sizes each label's box when it renders the diagram. Each
-    build-rendered Mermaid SVG carries a rule that draws its labels in the font
-    they were measured in: `Arial, Helvetica, "Liberation Sans", Arimo`, all with
-    Arial's widths. A label fits its box whatever font the site sets. A reader
-    device with none of these fonts falls back to its own sans font, which can be
-    wider.
-  - *Author font.* Labels always use this stack. An author font in an
-    `%%{init}%%` directive is not applied to labels: a fit the toolkit can
-    guarantee wins over the author's choice. Author fonts are tracked in
-    [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
+  - *Font.* Mermaid sizes each HTML label's box when it renders the diagram.
+    Each build-rendered Mermaid SVG carries a rule that draws its HTML labels in
+    the font they were measured in: `Arial, Helvetica, "Liberation Sans",
+    Arimo`, all with Arial's widths. The exception is a diagram with an
+    `%%{init}%%` font, which sets the measurement (see *Author font*). So a site
+    font cannot widen a label past its box, unless the reader's device has none
+    of these fonts and falls back to a wider sans font. Labels drawn as SVG
+    text, such as sequence diagram labels, keep Mermaid's own sizing.
+  - *Author font.* The site's font does not reach the labels. A font set in an
+    `%%{init}%%` directive is not shown either, but Mermaid still measures the
+    labels in it. If that font is narrower than Arial on the build machine, as a
+    serif font is, a label can overflow its box. A font set on one node with
+    `classDef` or `style` is kept, because Mermaid's rule for it is more specific
+    than the toolkit's. Such a label can also overflow its box when the font it
+    is shown in is wider than the one it was measured in. Author fonts are
+    tracked in [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
   - *Author fills.* A fill the author sets does not follow the theme. A label on
     an opaque author fill is black or white, whichever contrasts more with it.
   - *See-through fills.* The page shows through, so the label gets black or white
@@ -168,8 +174,20 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
     Otherwise it keeps its theme colour. Some pale see-through fills, such as
     `rgba(230,230,230,.5)`, keep a theme colour where black would also suit the
     default pages: the rule gives up that case to hold for every brand.
-  - *Author colours.* A label colour the author sets is kept. An edge colour the
-    author sets is the author's to check.
+  - *Author colours.* A label colour set with `classDef` or `style` is kept. A
+    label colour set in an `%%{init}%%` directive, such as `nodeTextColor`, is not
+    treated as the author's: it replaces a token outright.
+  - *Author edges.* A flowchart edge colour the author sets, with an
+    `%%{init}%%` `lineColor` or a `linkStyle`, does not follow the theme
+    either, so a dark one
+    vanishes on the dark page and a pale one on the light page. A mid-grey one
+    fades on whichever surface is nearest it in brightness. Each edge and its
+    arrowhead keep the author's colour in a theme where it clears 3:1 against
+    every surface it can sit on there: the page and a subgraph fill, anywhere from
+    black to the toolkit's lightest dark surface, or from its darkest light
+    surface to white. In a theme where it does not, a rule scoped to that edge's
+    id gives it the theme's edge colour. A brand whose dark surfaces are lighter,
+    or light surfaces darker, than the toolkit's is not covered by that range.
   - *Check.* `tests/a11y/diagram-legibility.spec.ts` measures every label and
     edge on a fixture page against the pixels behind it, in both themes, at
     1280 px and 390 px.

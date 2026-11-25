@@ -1,7 +1,7 @@
 {
-  "event_count": 45,
-  "last_event_id": "01M813GPNP8TB3HTVQBVQYC8QQ",
-  "materialized_at": "2026-11-22T07:46:17.398529+00:00",
+  "event_count": 60,
+  "last_event_id": "01M88R1FKKGCAZ2EJNK3ASNTM8",
+  "materialized_at": "2026-11-25T06:59:39.763435+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
+    "for_review": 1,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 0
   },
   "work_packages": {
@@ -65,9 +65,9 @@
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 3,
       "implementer_of_record": "claude::node-norris",
-      "lane": "in_review",
-      "last_event_id": "01M813GPNP8TB3HTVQBVQYC8QQ",
-      "last_transition_at": "2026-11-22T07:46:17.398529+00:00",
+      "lane": "approved",
+      "last_event_id": "01M813HD1B2Q4AXFGFG6GF83Q2",
+      "last_transition_at": "2026-11-22T07:46:40.299762+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "ef0920a: in-SVG label font pin + explicit render fontFamily (T005/T006: render-page css dropped, unproven; display rule embedded in the SVG, not dk-components.css, to keep the chrome CSS goldens); author-fill label contrast (Mermaid + PlantUML); rgba sentinel rewrite. Unit 4295/4295, mcp 181, typecheck, lint, legibility+diagram e2e green",
@@ -75,15 +75,16 @@
         "Review passed (cycle 2, claude::reviewer-renata). Cycle-1 blocker fixed in 9840913. The effective alpha now multiplies rgba/#rgba/#rrggbbaa alpha by fill-opacity and opacity, for Mermaid and PlantUML. Opaque fills are unchanged. A translucent fill gets black only if black clears 4.5:1 with the fill over pure black, and white only if white clears it over pure white; otherwise the label stays themed. Worst-case reasoning verified: compositing is linear per sRGB channel and luminance rises with each channel, so the blend is darkest over black and lightest over white, the binding cases for black and white text over ANY page, mid-grey and brand colours included. Neither colour safe -> themed. RAN: my own sweep (512 fills x 7 alphas x 48 pages): every pinned colour is >= 4.501:1 over every page. The 3 cycle-1 repros now return themed. PlantUML fill-opacity is honoured. pnpm test src 4302/4302, mcp 181/181; lint and typecheck clean. cssEscapeId addresses the nit. Note on the themed fallback: it is exactly main's behaviour, so it is never worse than main. It is more conservative than cycle 1 in a narrow band (e.g. rgba(230,230,230,.5): cycle 1 pinned black, which passes on the toolkit's near-black dark page; now themed, which fails in dark). That is a deliberate trade for brand-independence; non-blocking, worth a follow-up if a real diagram hits it. Shared file: example/docs/architecture/diagram-contrast-fixture.md is WP01-owned; one see-through node was added here as a recorded out-of-map edit, coordinated with WP01 (already approved). ACCEPTED FROM IMPLEMENTER (no PlantUML server here): Playwright light+dark green, with the see-through node at 6.38/6.93 vs 2.7 on cycle-1 code, plus the half-by-half proof.",
         "Cycle 3: author edge colours (operator ruling, option a)",
         "Cycle 3: author edge colours. Red 6fb4c8b (fixture lineColor #0a0721 + linkStyle #f5f5f5; all edges >=3:1 asserted; dark 1.02, light 1.04). Fix 33a1421: per-edge/per-marker id-scoped themed override only in the theme where the author colour is <3:1 vs pure black/white. Unit 4306/4306, mcp 181, typecheck, lint; legibility+diagram e2e 36/36",
-        "Cycle 4 fixed: red a1bf498 (#949494 edge 2.91:1 on the light page under the extremes rule); fix 0c7658f: per-theme backdrop range (black..lightest dark surface; darkest light surface..white; toolkit defaults, brand covered by test), sampled with translucent compositing. Unit 4309/4309, mcp 181, typecheck, lint; legibility+diagram e2e 36/36"
+        "Cycle 4 fixed: red a1bf498 (#949494 edge 2.91:1 on the light page under the extremes rule); fix 0c7658f: per-theme backdrop range (black..lightest dark surface; darkest light surface..white; toolkit defaults, brand covered by test), sampled with translucent compositing. Unit 4309/4309, mcp 181, typecheck, lint; legibility+diagram e2e 36/36",
+        "Review passed (cycle 4, claude::reviewer-renata). The cycle-3 blocker is fixed in 0c7658f: edgeThemesToOverride now samples each theme's backdrop luminance range (dark: black up to the lightest dark surface; light: the darkest light surface up to white; EDGE_SURFACES from theme.css), with the ends included. That covers the opaque worst case (an end of the range, or inside it). Verified: #5c5c5c and #606060 are themed in dark; #949494 and #d9731a in light; #1168bd is kept in both; #0a0721 in dark and #f5f5f5 in light are as before. RAN: my own sweep (729 colours x 3 opacities). All 1894 kept theme/colour pairs clear 3:1 on every real surface of their theme (#131721, #0e131c, black; #ffffff, #eef1f6), with translucent strokes blended over the actual tinted surfaces. pnpm test src 4309/4309, mcp 181/181; lint and typecheck clean. Nit: compositing a translucent stroke over a grey of equal luminance is an approximation for tinted surfaces; the sweep found no case where it matters. Docs: diagrams.md and the changelog do not claim black/white for edges. But diagrams.md line 171 ('An edge colour the author sets is the author's to check') is now stale after the edge override (operator ruling, option a). It must be updated with the font wording at consolidation (WP03 file, not WP02 scope). The fixture edit to a WP01 file is a recorded out-of-map edit. Accepted from the implementer (no PlantUML server here): the legibility + diagram e2e run, 36/36."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP02-font-and-label-contrast/review-cycle-4.md",
-        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP02-font-and-label-contrast/review-cycle-4.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP02-font-and-label-contrast/review-cycle-2.md",
+        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP02-font-and-label-contrast/review-cycle-2.md",
         "reviewer": "claude::reviewer-renata",
-        "verdict": "changes_requested"
+        "verdict": "approved"
       },
       "role": "reviewer",
       "shell_pid": 21457,
@@ -101,30 +102,36 @@
       ]
     },
     "WP03": {
-      "actor": "Claude",
-      "agent": "claude::reviewer-renata",
+      "actor": "claude",
+      "agent": "claude::curator-carla",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 3,
+      "force_count": 6,
       "implementer_of_record": "claude::curator-carla",
-      "lane": "approved",
-      "last_event_id": "01M80YW7X9CAJB012ER3Y78FYF",
-      "last_transition_at": "2026-11-22T06:25:12.617331+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M88R1FKKGCAZ2EJNK3ASNTM8",
+      "last_transition_at": "2026-11-25T06:59:39.763435+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "implementation is on the Mission branch at eeb40b3; lane-planning maps to main; never commit to main (operator ruling via dispatcher, 2026-11-22)",
-        "Review passed (claude::reviewer-renata). Reviewed eeb40b3 on the mission branch (the derived range f647a36..c8ca0d6 holds status commits only, because the planning lane maps to main). The forced move to for_review was under the operator ruling of 2026-11-22. Accuracy against approved WP01/WP02: font pin and its Arial-metric stack match; the reader-device fallback residual risk is stated; opaque fills get black/white, whichever contrasts more; see-through fills get black/white only if it clears 4.5:1 over any page, else themed; the rgba(230,230,230,.5) known limit is described correctly; author label colours are kept; author edge colours are the author's; the legibility check is described correctly; the halo fix (rgba sentinel rewrite) is in the changelog. The 'pending an operator decision' wording on author init fonts is accurate and not misleading. Non-blocking: the changelog fragment states 'An author font in an %%{init}%% directive no longer changes the label font' as settled; update it together with diagrams.md when the operator rules. RAN on 4eb280f: validate:docs (no warnings in diagrams.md), validate:links, validate:changelog (--check OK), markdownlint-cli2 on both files (0 issues). Vale is not installed in this reviewer container, so it was not run."
+        "Review passed (claude::reviewer-renata). Reviewed eeb40b3 on the mission branch (the derived range f647a36..c8ca0d6 holds status commits only, because the planning lane maps to main). The forced move to for_review was under the operator ruling of 2026-11-22. Accuracy against approved WP01/WP02: font pin and its Arial-metric stack match; the reader-device fallback residual risk is stated; opaque fills get black/white, whichever contrasts more; see-through fills get black/white only if it clears 4.5:1 over any page, else themed; the rgba(230,230,230,.5) known limit is described correctly; author label colours are kept; author edge colours are the author's; the legibility check is described correctly; the halo fix (rgba sentinel rewrite) is in the changelog. The 'pending an operator decision' wording on author init fonts is accurate and not misleading. Non-blocking: the changelog fragment states 'An author font in an %%{init}%% directive no longer changes the label font' as settled; update it together with diagrams.md when the operator rules. RAN on 4eb280f: validate:docs (no warnings in diagrams.md), validate:links, validate:changelog (--check OK), markdownlint-cli2 on both files (0 issues). Vale is not installed in this reviewer container, so it was not run.",
+        "Re-review on local main per operator ruling; spec-kitty/spec-kitty#7809",
+        "WP03 docs committed on local main e25328d per operator ruling (option 1; not pushed); evidence window now satisfied; spec-kitty/spec-kitty#7809. Same content mirrored on the Mission branch 3a5c48e.",
+        "Cycle 3 B1/N2 fixed on local main d8e79d7 (signed, not pushed); mirrored on Mission branch. classDef/style per-node fonts are kept and can overflow (#412); flowchart edges. N1 deferred to the PR's Deferred section / #412.",
+        "Cycle 4: B1/N2 resolved; new B2 — %%{init}%% font still sets the measurement, serif clips 9 px; docs overclaim",
+        "Cycle 4 B2 fixed (docs): %%{init}%% font still sets Mermaid's measurement while labels are shown in the Arial stack, so a narrower (serif) one can clip; points to #412. N3 (toolkit surfaces) and N4 (line wrap) folded."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP03-docs-and-changelog/review-cycle-1.md",
-        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP03-docs-and-changelog/review-cycle-1.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP03-docs-and-changelog/review-cycle-4.md",
+        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP03-docs-and-changelog/review-cycle-4.md",
         "reviewer": "claude::reviewer-renata",
-        "verdict": "approved"
+        "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 434,
-      "shell_pid_created_at": "1795328516.74",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
         "T010": "done",
         "T011": "done",
