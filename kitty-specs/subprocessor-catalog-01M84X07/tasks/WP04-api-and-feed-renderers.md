@@ -14,6 +14,9 @@ requirement_refs:
 planning_base_branch: feat/403-subprocessor-catalog
 merge_target_branch: feat/403-subprocessor-catalog
 branch_strategy: Planning artifacts for this mission were generated on feat/403-subprocessor-catalog. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into feat/403-subprocessor-catalog unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-subprocessor-catalog-01M84X07
+base_commit: 71b9b06ec98e99271d5acfe78fd2e54a7e0a96c4
+created_at: '2026-11-25T07:55:17.342995+00:00'
 subtasks:
 - T014
 - T015
