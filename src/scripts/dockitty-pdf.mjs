@@ -263,9 +263,10 @@ async function printDocument(browser, origin, doc, timeout) {
 /**
  * Print every selected document. Returns the written files.
  * @param {{ dist: string, base: string, sections?: string[], out?: string, timeout: number }} options
- * @param {{ epochSeconds: number, log?: (m: string) => void }} context
+ * @param {{ epochSeconds: number, log?: (m: string) => void, chromium?: { launch: (o: object) => Promise<any> } }} context
+ *   `chromium` replaces the Playwright browser type, for tests; by default it is loaded.
  */
-export async function printPdfs(options, { epochSeconds, log = (m) => process.stdout.write(`${m}\n`) }) {
+export async function printPdfs(options, { epochSeconds, log = (m) => process.stdout.write(`${m}\n`), chromium: injected }) {
   const manifestPath = path.join(options.dist, 'print', 'manifest.json');
   if (!existsSync(manifestPath)) throw new UsageError(`${manifestPath} is missing: build the site with PDFs enabled first`);
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
@@ -276,7 +277,7 @@ export async function printPdfs(options, { epochSeconds, log = (m) => process.st
     documents = documents.filter((doc) => options.sections.includes(doc.name));
   }
   if (documents.length === 0) throw new UsageError('the manifest lists no print document');
-  const chromium = await loadChromium();
+  const chromium = injected ?? (await loadChromium());
   const outDir = path.join(options.out ?? options.dist, 'pdf');
   mkdirSync(outDir, { recursive: true });
   const { server, origin } = await serveDist(options.dist, options.base);
