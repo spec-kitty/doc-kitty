@@ -21,6 +21,15 @@ describe('tomAnnex option', () => {
     expect(names(defineDocKittyIntegrations({ title: 'Docs', tomAnnex: false }))).not.toContain('doc-kitty:tom-annex');
   });
 
+  it('only `true` turns it on: a non-boolean value such as the string "true" means off (#455 F6)', () => {
+    // Like githubAlerts and markua, the option is compared with `=== true` and
+    // not validated; this pins that, independently of the `= false` default.
+    for (const value of ['true', 1, 'yes', null]) {
+      const list = names(defineDocKittyIntegrations({ title: 'Docs', tomAnnex: value as never }));
+      expect(list, String(value)).not.toContain('doc-kitty:tom-annex');
+    }
+  });
+
   it('when on, sits after the content-graph route and before served-surface detection', () => {
     const list = names(defineDocKittyIntegrations({ title: 'Docs', tomAnnex: true }));
     const at = list.indexOf('doc-kitty:tom-annex');

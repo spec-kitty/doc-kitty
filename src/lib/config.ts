@@ -323,7 +323,7 @@ export interface DocKittyOptions {
   githubAlerts?: boolean;
   /**
    * Opt-in evidence index (#401, operator ruling on #455). **Default off.** Set
-   * `true` to build `/api/tom-annex.json`, which lists, per measure of the
+   * `true` (only the boolean `true`; any other value means off) to build `/api/tom-annex.json`, which lists, per measure of the
    * measures catalog, the published pages classified with `tom_classification`
    * and the measures none evidences. With it on, the index is linked from
    * `api/index.json` as `_links.tomAnnex` and copied into the OKF export; a site
