@@ -32,13 +32,14 @@ test.describe('Diagram legibility (#369, #370)', () => {
       const report = await measureLegibility(page);
       await testInfo.attach('legibility.json', { body: JSON.stringify(report, null, 2), contentType: 'application/json' });
 
-      // Non-vacuity: the five fixture diagrams, with their labels and edges, were measured.
-      expect(report.figures, 'all five fixture diagrams render as build-time SVG').toBe(5);
+      // Non-vacuity: the six fixture diagrams, with their labels and edges, were measured.
+      expect(report.figures, 'all six fixture diagrams render as build-time SVG').toBe(6);
       expect(report.labels.length, 'labels were measured').toBeGreaterThanOrEqual(20);
-      // Edges per figure, in page order: long labels 3, author font 2, author colours 3
-      // (one linkStyle), author edge colours 4 (init lineColor, a pale and a mid-grey
-      // linkStyle), ArchiMate 3. A lost edge fails here rather than passing quietly.
-      expect(report.edgesPerFigure, 'edges measured per figure').toEqual([3, 2, 3, 4, 3]);
+      // Edges per figure, in page order: long labels 3, author font 2, serif author
+      // font 1, author colours 3 (one linkStyle), author edge colours 4 (init
+      // lineColor, a pale and a mid-grey linkStyle), ArchiMate 3. A lost edge fails
+      // here rather than passing quietly.
+      expect.soft(report.edgesPerFigure, 'edges measured per figure').toEqual([3, 2, 1, 3, 4, 3]);
       expect(report.skippedEdges, 'edges found but not measured').toEqual([]);
       expect(report.skippedLabels, 'labels found but not measured').toEqual([]);
 

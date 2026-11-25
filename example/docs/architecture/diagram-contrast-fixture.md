@@ -55,6 +55,20 @@ flowchart LR
   snapshot -->|folded by the reducer and consumed by the site| docs
 ```
 
+The next diagram asks for a serif font. A serif font is narrower than the
+toolkit's label font, so a box measured in it would be too small for the label.
+It has a single edge, which an SVG optimizer could otherwise restyle.
+
+```mermaid
+%%{init: {'themeVariables': {'fontFamily': 'serif'}}}%%
+%% title: Long labels with a serif author font
+%% description: Two long labels in a diagram that asks for a serif font.
+flowchart LR
+  serifA[Wonderfully long label]
+  serifB[A second long label]
+  serifA --> serifB
+```
+
 ## Author-set colours
 
 The author sets each node's fill here. Two nodes set only a fill, so the
