@@ -103,7 +103,7 @@
     },
     "WP03": {
       "actor": "claude",
-      "agent": null,
+      "agent": "claude::curator-carla",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 6,
@@ -118,7 +118,8 @@
         "Re-review on local main per operator ruling; spec-kitty/spec-kitty#7809",
         "WP03 docs committed on local main e25328d per operator ruling (option 1; not pushed); evidence window now satisfied; spec-kitty/spec-kitty#7809. Same content mirrored on the Mission branch 3a5c48e.",
         "Cycle 3 B1/N2 fixed on local main d8e79d7 (signed, not pushed); mirrored on Mission branch. classDef/style per-node fonts are kept and can overflow (#412); flowchart edges. N1 deferred to the PR's Deferred section / #412.",
-        "Cycle 4: B1/N2 resolved; new B2 — %%{init}%% font still sets the measurement, serif clips 9 px; docs overclaim"
+        "Cycle 4: B1/N2 resolved; new B2 — %%{init}%% font still sets the measurement, serif clips 9 px; docs overclaim",
+        "Cycle 4 B2 fixed (docs): %%{init}%% font still sets Mermaid's measurement while labels are shown in the Arial stack, so a narrower (serif) one can clip; points to #412. N3 (toolkit surfaces) and N4 (line wrap) folded."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
