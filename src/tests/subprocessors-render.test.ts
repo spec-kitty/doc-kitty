@@ -188,6 +188,12 @@ describe('byte stability (NFR-001, C-005)', () => {
     expect(late).toEqual(early);
   });
 
+  it('renders the same bytes in another time zone', () => {
+    const utc = both();
+    vi.stubEnv('TZ', 'Pacific/Kiritimati');
+    expect(both()).toEqual(utc);
+  });
+
   it('changes when the catalog changes (positive control)', () => {
     const changed = {
       ...INPUT,
