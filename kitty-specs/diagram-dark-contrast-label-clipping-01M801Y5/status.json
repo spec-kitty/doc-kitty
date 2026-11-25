@@ -1,7 +1,7 @@
 {
-  "event_count": 71,
-  "last_event_id": "01M88WQVZ3B5FYT1AWD99VB843",
-  "materialized_at": "2026-11-25T08:21:47.619251+00:00",
+  "event_count": 72,
+  "last_event_id": "01M88WWTDZEX2E8BXN1ZTWGZR4",
+  "materialized_at": "2026-11-25T08:24:29.887577+00:00",
   "mission_number": "",
   "mission_slug": "diagram-dark-contrast-label-clipping-01M801Y5",
   "mission_type": "software-dev",
@@ -14,8 +14,8 @@
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
-    "planned": 0
+    "in_review": 0,
+    "planned": 1
   },
   "work_packages": {
     "WP01": {
@@ -107,11 +107,11 @@
       "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 8,
+      "force_count": 9,
       "implementer_of_record": "claude::curator-carla",
-      "lane": "in_review",
-      "last_event_id": "01M88WQVZ3B5FYT1AWD99VB843",
-      "last_transition_at": "2026-11-25T08:21:47.619251+00:00",
+      "lane": "planned",
+      "last_event_id": "01M88WWTDZEX2E8BXN1ZTWGZR4",
+      "last_transition_at": "2026-11-25T08:24:29.887577+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "implementation is on the Mission branch at eeb40b3; lane-planning maps to main; never commit to main (operator ruling via dispatcher, 2026-11-22)",
@@ -129,8 +129,8 @@
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {
-        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP03-docs-and-changelog/review-cycle-5.md",
-        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP03-docs-and-changelog/review-cycle-5.md",
+        "feedback_path": "/home/user/doc-kitty/.worktrees/diagram-dark-contrast-label-clipping-01M801Y5-coord/kitty-specs/diagram-dark-contrast-label-clipping-01M801Y5/tasks/WP03-docs-and-changelog/review-cycle-6.md",
+        "reference": "review-cycle://diagram-dark-contrast-label-clipping-01M801Y5/WP03-docs-and-changelog/review-cycle-6.md",
         "reviewer": "claude::reviewer-renata",
         "verdict": "changes_requested"
       },
