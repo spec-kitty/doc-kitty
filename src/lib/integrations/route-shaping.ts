@@ -3,7 +3,7 @@
  * reports shaping warnings once per build. Moved out of `config.ts` (#115);
  * `config.ts` re-exports every public symbol.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import matter from 'gray-matter';
@@ -13,6 +13,7 @@ import { resolveSectionRegistry, sectionFeeds, feedsSurface, sectionOrder, type 
 import { buildDirectoryMeta, pageRouteSlug, type DirectoryMetaInput } from '../route-shaping.js';
 import { hubListingPages, isChildCap, isPagedHub, resolveChildCap, resolveHubPageSize, type HubCap } from '../child-cap.js';
 import { PAGED_HUB_ROUTE } from './paged-hubs.js';
+import { dropUnbuiltListingAlternates } from '../listing-alternates.js';
 import { composeHubChildren, selectHubChildren } from '../hub-children.mjs';
 import { loadAdrIdRule } from '../../scripts/generate-adr-index.mjs';
 import { chromeOptions } from '../chrome-options.js';
@@ -322,6 +323,9 @@ export function routeShapingIntegration(
       return id === RESOLVED ? routeShapingSource(options, state) : null;
     },
   };
+  // The listing pages this build mounts (#342), set by the setup hook; the
+  // build-done hook drops their alternates to unbuilt locale listing pages (Q9).
+  let listingSlugs: string[] = [];
   return {
     name: 'doc-kitty:route-shaping',
     hooks: {
@@ -335,13 +339,29 @@ export function routeShapingIntegration(
         // cannot import the virtual module (the agent API, llms.txt, the build
         // identity), so the mount and those surfaces list the same pages.
         const hubs = siteHubData(options, shapingPages(options, state, new Set(state.unpublishedDirs)));
-        if (hubListingPages(hubs).length > 0) injectRoute(PAGED_HUB_ROUTE);
+        listingSlugs = hubListingPages(hubs).map((page) => page.slug);
+        if (listingSlugs.length > 0) injectRoute(PAGED_HUB_ROUTE);
         // Astro passes its `cacheDir`; without one (a harness that runs the hook
         // directly), Astro's own default, `./node_modules/.astro`.
         const cacheDir = config?.cacheDir ? fileURLToPath(config.cacheDir) : path.resolve(process.cwd(), 'node_modules', '.astro');
         setInternalEnv(DK_HUB_DATA_ENV, writeHubData(path.join(cacheDir, 'doc-kitty-hubs'), hubs));
       },
-      'astro:build:done': () => {
+      'astro:build:done': ({ pages, dir }) => {
+        // Locales page to their own depth, so a listing page's hreflang links and
+        // language picker can name a locale listing page that was never built:
+        // keep only the built ones (the operator's Q9 ruling). Only listing pages
+        // are read; a site with no paged hub skips this entirely.
+        if (listingSlugs.length > 0) {
+          const built = new Set(pages.map((page) => page.pathname.replace(/^\/+|\/+$/g, '')));
+          const outDir = fileURLToPath(dir);
+          for (const slug of listingSlugs) {
+            const file = [path.join(outDir, slug, 'index.html'), path.join(outDir, `${slug}.html`)].find((f) => existsSync(f));
+            if (!file) continue;
+            const html = readFileSync(file, 'utf8');
+            const rewritten = dropUnbuiltListingAlternates(html, options.base, built);
+            if (rewritten !== html) writeFileSync(file, rewritten);
+          }
+        }
         const sink = shapingWarningSink();
         for (const warning of [...sink].sort(compareCodeUnit)) {
           console.warn(`[dk-sidebar] ${warning}`);

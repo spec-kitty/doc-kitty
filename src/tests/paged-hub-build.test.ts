@@ -11,12 +11,16 @@
  *     in the search index, and its pagination marks N current (not a link);
  *  3. the sitemap lists every child and every listing page once;
  *  4. variants: an exact multiple, the page-size levels, a consumer sidebar, a
- *     translated locale, a `page` child, and two identical builds.
+ *     translated locale, a `page` child, and two identical builds;
+ *  5. locales paged to different depths: a listing page's hreflang links and
+ *     language picker name only the locale listing pages that are built (the
+ *     operator's Q9 ruling, 2026-11-25).
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { BASE, REPO_ROOT, buildSite, builtPages, missionChildren, writeSite } from './fixtures/large-hub/site.mjs';
+import { unbuiltListingAlternates } from '../lib/listing-alternates.js';
 
 const BUILD_TIMEOUT = 300_000;
 const root = (name: string) => path.join(REPO_ROOT, 'example', `.dk-test-sidebar-cap-paged-${name}`);
@@ -27,6 +31,7 @@ const SITES = {
   levels: root('levels'),
   custom: root('custom'),
   locale: root('locale'),
+  locales: root('locales'),
   clash: root('clash'),
   noclash: root('noclash'),
 };
@@ -55,6 +60,15 @@ function pager(html: string): string {
   return start === -1 ? '' : html.slice(start, html.indexOf('</nav>', start) + 6);
 }
 const pagerLinks = (html: string) => [...pager(html).matchAll(/<a [^>]*href="([^"]+)"[^>]*>/g)].map((m) => m[1]!.slice(BASE.length + 1, -1));
+
+/** A page's hreflang `<link>`s as `<lang> <route>`, in order. */
+const hreflangs = (html: string) =>
+  [...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="[^"]*?\/site\/([^"]*?)\/?"\/?>/g)].map((m) => `${m[1]} ${m[2]}`);
+/** A page's language picker options (desktop and mobile) as `<route> <label>`, in order. */
+const pickerOptions = (html: string) =>
+  [...html.matchAll(/<starlight-lang-select>[\s\S]*?<\/starlight-lang-select>/g)].flatMap((block) =>
+    [...block[0].matchAll(/<option value="\/site\/([^"]*?)\/?"[^>]*>([^<]*)<\/option>/g)].map((m) => `${m[1]} ${m[2]}`),
+  );
 
 function sitemapLocs(dir: string): string[] {
   const dist = path.join(dir, 'dist');
@@ -188,6 +202,29 @@ describe('variants (FR-003, FR-016, FR-017, FR-018, NFR-003)', () => {
     expect(pager(html!)).toContain('rel="prev">Previous</a>');
     expect(pages.has('fr/missions/page/3')).toBe(true);
     expect(pages.has('missions/page/2')).toBe(false);
+    // English is not paged, so a French listing page has no English alternate
+    // and no x-default (both would name an unbuilt `missions/page/2/`) (Q9).
+    expect(hreflangs(html!)).toEqual(['fr fr/missions/page/2']);
+    expect(pickerOptions(html!)).toEqual(['fr/missions/page/2 Français', 'fr/missions/page/2 Français']);
+    expect(hreflangs(pages.get('fr/missions')!), 'the hub page keeps every alternate').toHaveLength(3);
+  }, BUILD_TIMEOUT);
+
+  it('locales paged to different depths: alternates name only built listing pages (Q9)', () => {
+    const pages = build(SITES.locales, { missions: 200, fr: 120 });
+    const built = new Set([...pages.keys()]);
+    // en has 4 listing pages, fr 3: en page/4 has no fr alternate in its head or picker.
+    expect(hreflangs(pages.get('missions/page/4')!)).toEqual(['en missions/page/4', 'x-default missions/page/4']);
+    expect(pickerOptions(pages.get('missions/page/4')!)).toEqual(['missions/page/4 English', 'missions/page/4 English']);
+    // Where both are built, both stay.
+    for (const route of ['missions/page/2', 'missions/page/3', 'fr/missions/page/2', 'fr/missions/page/3']) {
+      const twin = route.startsWith('fr/') ? route.slice(3) : route;
+      expect(hreflangs(pages.get(route)!), route).toEqual([`en ${twin}`, `fr fr/${twin}`, `x-default ${twin}`]);
+      expect(pickerOptions(pages.get(route)!), route).toEqual([
+        `${twin} English`, `fr/${twin} Français`, `${twin} English`, `fr/${twin} Français`,
+      ]);
+    }
+    // The built-HTML check: no built page names an unbuilt listing page.
+    for (const [route, html] of pages) expect(unbuiltListingAlternates(html, BASE, built), route).toEqual([]);
   }, BUILD_TIMEOUT);
 
   it('a page child of a paged hub fails the build; the same child under an unpaged hub builds (FR-016)', () => {
