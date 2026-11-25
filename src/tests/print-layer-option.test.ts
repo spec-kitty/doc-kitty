@@ -79,6 +79,7 @@ describe('nothing else loads the print client', () => {
       "import x from './print/print.client';",
       "export { y } from '../print/print.client.ts';",
       "await import('../lib/print/print.client.ts');",
+      'await import(`../lib/print/print.client.ts`);',
     ]) {
       expect(PRINT_CLIENT_IMPORT.test(form), form).toBe(true);
     }
