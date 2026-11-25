@@ -53,6 +53,9 @@
       "last_event_id": "01M88SSWP95AXWM0D0FHZXFXP0",
       "last_transition_at": "2026-11-25T07:30:28.169555+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Core + loader; 71 targeted tests, 4/4 mutations caught; full pnpm test green"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 2650,
