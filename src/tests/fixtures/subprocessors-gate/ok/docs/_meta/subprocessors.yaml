@@ -1,0 +1,13 @@
+# Fictional fixture for the gate tests (ADR-0086).
+- id: acme-hosting
+  name: Acme Hosting B.V.
+  processing: Hosting.
+  location: [NL]
+  responsibilities: Acme operates the infrastructure.
+  since: 2025-01-15
+- id: beta-mail
+  name: Beta Mail Ltd
+  processing: Transactional email.
+  location: [IE]
+  responsibilities: Beta delivers mail.
+  since: 2027-03-01

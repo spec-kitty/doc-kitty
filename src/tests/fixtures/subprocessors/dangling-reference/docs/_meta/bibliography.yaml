@@ -1,0 +1,5 @@
+# Fictional fixture for the sub-processor loader tests.
+- id: acme-dpa
+  type: webpage
+  title: Acme Hosting data processing agreement
+  url: https://acme-hosting.example/dpa
