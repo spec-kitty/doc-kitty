@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/context/incident-handling/">
+  <id>https://spec-kitty.github.io/doc-kitty/context/incident-handling/</id>
+  <title>Incident handling</title>
+  <updated>2026-11-22T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/context/incident-handling/"/>
+  <summary>How the example organisation handles an incident, written once for every product and classified as organisation-wide measures.</summary>
+  <content type="html">&lt;span id=&quot;incident-handling&quot;&gt;&lt;/span&gt;
+&lt;aside aria-label=&quot;Note&quot; class=&quot;starlight-aside starlight-aside--note&quot;&gt;&lt;p class=&quot;starlight-aside__title&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; width=&quot;16&quot; height=&quot;16&quot; fill=&quot;currentColor&quot; class=&quot;starlight-aside__icon&quot;&gt;&lt;path d=&quot;M12 11a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1Zm.38-3.92a1 1 0 0 0-.76 0 1 1 0 0 0-.33.21 1.15 1.15 0 0 0-.21.33 1 1 0 0 0 .21 1.09c.097.088.209.16.33.21A1 1 0 0 0 13 8a1.05 1.05 0 0 0-.29-.71 1 1 0 0 0-.33-.21ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16.001A8 8 0 0 1 12 20Z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;Note&lt;/p&gt;&lt;div class=&quot;starlight-aside__content&quot;&gt;&lt;p&gt;This page is an invented example of a TOM classification. It is not legal
+advice.&lt;/p&gt;&lt;/div&gt;&lt;/aside&gt;
+&lt;p&gt;The example organisation handles incidents the same way for every product it
+runs. This page describes that process once. Product pages link here instead of
+repeating it.&lt;/p&gt;
+&lt;h2 id=&quot;how-an-incident-runs&quot;&gt;How an incident runs&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;Whoever notices the problem opens an incident and names an owner.&lt;/li&gt;
+&lt;li&gt;The owner restores service from the latest backup when data is affected.&lt;/li&gt;
+&lt;li&gt;Within five working days, the owner writes a short review: what happened,
+why, and what changes.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;why-the-classification-says-organisation&quot;&gt;Why the classification says organisation&lt;/h2&gt;
+&lt;p&gt;The process does not belong to one system. Its &lt;code dir=&quot;auto&quot;&gt;tom_classification&lt;/code&gt; entries
+carry &lt;code dir=&quot;auto&quot;&gt;scope: organisation&lt;/code&gt;, so a later export can list these measures once,
+as inherited, for every product that links here.&lt;/p&gt;</content>
+</entry>

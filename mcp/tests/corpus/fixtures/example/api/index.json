@@ -2,8 +2,8 @@
   "title": "DocKitty Example",
   "version": "3",
   "generatedFrom": "doc-kitty",
-  "count": 73,
-  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
+  "count": 92,
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
   "sections": [
     {
       "id": "context",
@@ -188,6 +188,35 @@
       }
     },
     {
+      "slug": "context/incident-handling",
+      "route": "/context/incident-handling/",
+      "section": "context",
+      "title": "Incident handling",
+      "description": "How the example organisation handles an incident, written once for every product and classified as organisation-wide measures.",
+      "type": "Context",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "operations",
+        "tom"
+      ],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-22T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/incident-handling.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/incident-handling.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/"
+        },
+        "related": []
+      }
+    },
+    {
       "slug": "context/audience/example-persona",
       "route": "/context/audience/example-persona/",
       "section": "context",
@@ -333,6 +362,47 @@
       }
     },
     {
+      "slug": "architecture/audit-logging",
+      "route": "/architecture/audit-logging/",
+      "section": "architecture",
+      "title": "Audit logging",
+      "description": "How the example product records administrative actions, with the technical measures this page provides evidence for.",
+      "type": "Architecture",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [
+        "security",
+        "tom"
+      ],
+      "related": [
+        {
+          "ref": "context/incident-handling",
+          "title": "Incident handling",
+          "kind": "Explanation",
+          "doc_status": "active"
+        }
+      ],
+      "priority": 0.5,
+      "updated": "2026-11-22T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/audit-logging.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/audit-logging.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/"
+        },
+        "related": [
+          {
+            "href": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/",
+            "title": "Incident handling"
+          }
+        ]
+      }
+    },
+    {
       "slug": "architecture/blocks-demonstrator",
       "route": "/architecture/blocks-demonstrator/",
       "section": "architecture",
@@ -456,7 +526,7 @@
         }
       ],
       "priority": 0.5,
-      "updated": "2026-10-14T00:00:00Z",
+      "updated": "2026-11-10T00:00:00Z",
       "source": "https://spec-kitty.github.io/doc-kitty/api/pages/architecture/overview.json",
       "audience": [],
       "url": "https://spec-kitty.github.io/doc-kitty/architecture/overview/",
@@ -962,6 +1032,110 @@
       }
     },
     {
+      "slug": "guides/paged-hub/accessibility",
+      "route": "/guides/paged-hub/accessibility/",
+      "section": "guides",
+      "title": "Accessibility",
+      "description": "The pagination is a labelled navigation landmark that works with a keyboard and a screen reader.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/accessibility.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/accessibility/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/accessibility.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/accessibility/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/paged-hub/agents-and-feeds",
+      "route": "/guides/paged-hub/agents-and-feeds/",
+      "section": "guides",
+      "title": "Agents and feeds",
+      "description": "Listing pages appear in the agent API, llms.txt and the sitemap, and every child is still listed once.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/agents-and-feeds.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/agents-and-feeds/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/agents-and-feeds.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/agents-and-feeds/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/capped-hub",
+      "route": "/guides/capped-hub/",
+      "section": "guides",
+      "title": "Capped hub",
+      "description": "A hub with more children than its sidebar child cap, so the sidebar shows one entry for its pages.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-23T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/capped-hub/generated-pages",
+      "route": "/guides/capped-hub/generated-pages/",
+      "section": "guides",
+      "title": "Generated pages",
+      "description": "How a page generator can hide capped pages before the sidebar is built.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-23T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/generated-pages.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/generated-pages/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/generated-pages.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/generated-pages/"
+        },
+        "related": []
+      }
+    },
+    {
       "slug": "guides/getting-started",
       "route": "/guides/getting-started/",
       "section": "guides",
@@ -1073,7 +1247,7 @@
         }
       ],
       "priority": 0.5,
-      "updated": "2026-10-19T00:00:00Z",
+      "updated": "2026-11-11T00:00:00Z",
       "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/install.json",
       "audience": [],
       "url": "https://spec-kitty.github.io/doc-kitty/guides/install/",
@@ -1094,6 +1268,32 @@
             "title": "Release history"
           }
         ]
+      }
+    },
+    {
+      "slug": "guides/paged-hub/listing-page-urls",
+      "route": "/guides/paged-hub/listing-page-urls/",
+      "section": "guides",
+      "title": "Listing page URLs",
+      "description": "Listing page N of a hub is at /<hub>/page/N/, from 2 up; page 1 is the hub itself.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/listing-page-urls.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/listing-page-urls/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/listing-page-urls.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/listing-page-urls/"
+        },
+        "related": []
       }
     },
     {
@@ -1132,7 +1332,7 @@
       "route": "/guides/markua-malformed/",
       "section": "guides",
       "title": "Markua graceful degradation",
-      "description": "Deliberately malformed Markua that must never fail the build (NFR-002).",
+      "description": "Deliberately broken Markua that shows how DocKitty degrades to readable text without failing the build.",
       "type": "Guide",
       "doc_status": "active",
       "kind": "Reference",
@@ -1143,7 +1343,7 @@
       ],
       "related": [],
       "priority": 0.5,
-      "updated": "2026-08-29T00:00:00Z",
+      "updated": "2026-11-18T00:00:00Z",
       "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/markua-malformed.json",
       "audience": [],
       "url": "https://spec-kitty.github.io/doc-kitty/guides/markua-malformed/",
@@ -1189,6 +1389,58 @@
       }
     },
     {
+      "slug": "guides/paged-hub/page-size",
+      "route": "/guides/paged-hub/page-size/",
+      "section": "guides",
+      "title": "Page size",
+      "description": "The number of children each listing page shows, set per hub, per section or for the site.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page-size.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page-size/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page-size.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page-size/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/paged-hub",
+      "route": "/guides/paged-hub/",
+      "section": "guides",
+      "title": "Paged hub",
+      "description": "A hub over its sidebar child cap that lists its pages two at a time, with a pagination below the list.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Hub",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/"
+        },
+        "related": []
+      }
+    },
+    {
       "slug": "guides/scenarios-in-pages",
       "route": "/guides/scenarios-in-pages/",
       "section": "guides",
@@ -1229,6 +1481,188 @@
             "title": "Book a consignment"
           }
         ]
+      }
+    },
+    {
+      "slug": "guides/paged-hub/search",
+      "route": "/guides/paged-hub/search/",
+      "section": "guides",
+      "title": "Search",
+      "description": "Listing pages are in the site search, and a child's own page still ranks first for its title.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/search.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/search.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/capped-hub/the-capped-entry",
+      "route": "/guides/capped-hub/the-capped-entry/",
+      "section": "guides",
+      "title": "The capped entry",
+      "description": "The one sidebar entry that stands for a capped hub's pages.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-23T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/the-capped-entry.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/the-capped-entry/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/the-capped-entry.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/the-capped-entry/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/paged-hub/translating-the-pagination",
+      "route": "/guides/paged-hub/translating-the-pagination/",
+      "section": "guides",
+      "title": "Translating the pagination",
+      "description": "The pagination's name and labels are UI strings that a site can translate.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "How-To",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/translating-the-pagination.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/translating-the-pagination.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/capped-hub/what-stays-reachable",
+      "route": "/guides/capped-hub/what-stays-reachable/",
+      "section": "guides",
+      "title": "What stays reachable",
+      "description": "Capped pages leave the sidebar, but every other route to them stays.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-23T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/what-stays-reachable.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/what-stays-reachable/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/what-stays-reachable.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/what-stays-reachable/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/paged-hub/when-a-hub-is-paged",
+      "route": "/guides/paged-hub/when-a-hub-is-paged/",
+      "section": "guides",
+      "title": "When a hub is paged",
+      "description": "Only a hub over its sidebar child cap is paged, and only when its children outnumber its page size.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-24T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/when-a-hub-is-paged.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/when-a-hub-is-paged.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/capped-hub/where-the-cap-is-set",
+      "route": "/guides/capped-hub/where-the-cap-is-set/",
+      "section": "guides",
+      "title": "Where the cap is set",
+      "description": "The cap is read from the hub, then its section, then the site.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-23T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/where-the-cap-is-set.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/where-the-cap-is-set/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/where-the-cap-is-set.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/where-the-cap-is-set/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/capped-hub/why-a-cap",
+      "route": "/guides/capped-hub/why-a-cap/",
+      "section": "guides",
+      "title": "Why a cap",
+      "description": "A section with hundreds of pages puts hundreds of links in every page's sidebar.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Explanation",
+      "tags": [],
+      "related": [],
+      "priority": 0.5,
+      "updated": "2026-11-23T00:00:00Z",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/why-a-cap.json",
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/why-a-cap/",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub/why-a-cap.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/why-a-cap/"
+        },
+        "related": []
       }
     },
     {
@@ -2305,12 +2739,99 @@
       }
     },
     {
+      "slug": "guides/paged-hub/page/2",
+      "route": "/guides/paged-hub/page/2/",
+      "section": "guides",
+      "title": "Paged hub, page 2",
+      "description": "Children 3–4 of 7 of the Paged hub hub.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Listing",
+      "tags": [],
+      "priority": 0.5,
+      "updated": null,
+      "listing_of": "guides/paged-hub",
+      "page": 2,
+      "of": 4,
+      "related": [],
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/2/",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/2.json",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/2.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/2/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/paged-hub/page/3",
+      "route": "/guides/paged-hub/page/3/",
+      "section": "guides",
+      "title": "Paged hub, page 3",
+      "description": "Children 5–6 of 7 of the Paged hub hub.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Listing",
+      "tags": [],
+      "priority": 0.5,
+      "updated": null,
+      "listing_of": "guides/paged-hub",
+      "page": 3,
+      "of": 4,
+      "related": [],
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/3/",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/3.json",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/3.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/3/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "guides/paged-hub/page/4",
+      "route": "/guides/paged-hub/page/4/",
+      "section": "guides",
+      "title": "Paged hub, page 4",
+      "description": "Children 7–7 of 7 of the Paged hub hub.",
+      "type": "Guide",
+      "doc_status": "active",
+      "kind": "Listing",
+      "tags": [],
+      "priority": 0.5,
+      "updated": null,
+      "listing_of": "guides/paged-hub",
+      "page": 4,
+      "of": 4,
+      "related": [],
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/4/",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/4.json",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/4.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/4/"
+        },
+        "related": []
+      }
+    },
+    {
       "slug": "reference/api/v1",
       "route": "/reference/api/v1/",
       "section": "reference",
       "title": "Shipping API v1",
       "description": "OpenAPI 1.0.0 contract, 3 operations",
-      "type": "reference",
+      "type": "Reference",
       "doc_status": "active",
       "kind": "Reference",
       "tags": [
@@ -2336,43 +2857,12 @@
       }
     },
     {
-      "slug": "reference/api/v1-1",
-      "route": "/reference/api/v1-1/",
-      "section": "reference",
-      "title": "Shipping API v1-1",
-      "description": "OpenAPI 1.1.0 contract, 3 operations",
-      "type": "reference",
-      "doc_status": "active",
-      "kind": "Reference",
-      "tags": [
-        "openapi"
-      ],
-      "priority": 0.5,
-      "updated": null,
-      "released": true,
-      "rawDocumentUrl": "/doc-kitty/reference/api/v1-1/openapi.yaml",
-      "sha256": "068383373bd07876d1f9c26466c900eee53ccd1bceef5cd23d26e8d0a296c8d7",
-      "related": [],
-      "audience": [],
-      "url": "https://spec-kitty.github.io/doc-kitty/reference/api/v1-1/",
-      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/reference/api/v1-1.json",
-      "_links": {
-        "self": {
-          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/reference/api/v1-1.json"
-        },
-        "html": {
-          "href": "https://spec-kitty.github.io/doc-kitty/reference/api/v1-1/"
-        },
-        "related": []
-      }
-    },
-    {
       "slug": "reference/api/main",
       "route": "/reference/api/main/",
       "section": "reference",
       "title": "Shipping API main (unreleased)",
       "description": "OpenAPI 1.1.0-dev contract, 3 operations",
-      "type": "reference",
+      "type": "Reference",
       "doc_status": "active",
       "kind": "Reference",
       "tags": [
@@ -2393,6 +2883,37 @@
         },
         "html": {
           "href": "https://spec-kitty.github.io/doc-kitty/reference/api/main/"
+        },
+        "related": []
+      }
+    },
+    {
+      "slug": "reference/api/v1-1",
+      "route": "/reference/api/v1-1/",
+      "section": "reference",
+      "title": "Shipping API v1-1",
+      "description": "OpenAPI 1.1.0 contract, 3 operations",
+      "type": "Reference",
+      "doc_status": "active",
+      "kind": "Reference",
+      "tags": [
+        "openapi"
+      ],
+      "priority": 0.5,
+      "updated": null,
+      "released": true,
+      "rawDocumentUrl": "/doc-kitty/reference/api/v1-1/openapi.yaml",
+      "sha256": "068383373bd07876d1f9c26466c900eee53ccd1bceef5cd23d26e8d0a296c8d7",
+      "related": [],
+      "audience": [],
+      "url": "https://spec-kitty.github.io/doc-kitty/reference/api/v1-1/",
+      "source": "https://spec-kitty.github.io/doc-kitty/api/pages/reference/api/v1-1.json",
+      "_links": {
+        "self": {
+          "href": "https://spec-kitty.github.io/doc-kitty/api/pages/reference/api/v1-1.json"
+        },
+        "html": {
+          "href": "https://spec-kitty.github.io/doc-kitty/reference/api/v1-1/"
         },
         "related": []
       }

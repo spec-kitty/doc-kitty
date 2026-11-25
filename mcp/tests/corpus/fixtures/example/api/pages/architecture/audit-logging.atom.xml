@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/">
+  <id>https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/</id>
+  <title>Audit logging</title>
+  <updated>2026-11-22T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/architecture/audit-logging/"/>
+  <summary>How the example product records administrative actions, with the technical measures this page provides evidence for.</summary>
+  <content type="html">&lt;span id=&quot;audit-logging&quot;&gt;&lt;/span&gt;
+&lt;aside aria-label=&quot;Note&quot; class=&quot;starlight-aside starlight-aside--note&quot;&gt;&lt;p class=&quot;starlight-aside__title&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; width=&quot;16&quot; height=&quot;16&quot; fill=&quot;currentColor&quot; class=&quot;starlight-aside__icon&quot;&gt;&lt;path d=&quot;M12 11a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1Zm.38-3.92a1 1 0 0 0-.76 0 1 1 0 0 0-.33.21 1.15 1.15 0 0 0-.21.33 1 1 0 0 0 .21 1.09c.097.088.209.16.33.21A1 1 0 0 0 13 8a1.05 1.05 0 0 0-.29-.71 1 1 0 0 0-.33-.21ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16.001A8 8 0 0 1 12 20Z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;Note&lt;/p&gt;&lt;div class=&quot;starlight-aside__content&quot;&gt;&lt;p&gt;This page is an invented example of a TOM classification. It is not legal
+advice.&lt;/p&gt;&lt;/div&gt;&lt;/aside&gt;
+&lt;p&gt;The example product writes one log line for every administrative action. Each
+line names the actor, the action and the time.&lt;/p&gt;
+&lt;p&gt;Log archives are encrypted at rest and kept for thirteen months.&lt;/p&gt;
+&lt;h2 id=&quot;incidents&quot;&gt;Incidents&lt;/h2&gt;
+&lt;p&gt;Incident handling is an organisation-wide process. This page does not restate
+it. It links to &lt;a href=&quot;/doc-kitty/context/incident-handling/&quot;&gt;Incident handling&lt;/a&gt; through
+&lt;code dir=&quot;auto&quot;&gt;related&lt;/code&gt;, so the organisation measures stay written and reviewed in one place.&lt;/p&gt;</content>
+</entry>

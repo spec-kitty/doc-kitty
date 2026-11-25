@@ -1,0 +1,43 @@
+{
+  "slug": "guides/paged-hub/page/4",
+  "route": "/guides/paged-hub/page/4/",
+  "section": "guides",
+  "title": "Paged hub, page 4",
+  "description": "Children 7–7 of 7 of the Paged hub hub.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Listing",
+  "tags": [],
+  "priority": 0.5,
+  "updated": null,
+  "listing_of": "guides/paged-hub",
+  "page": 4,
+  "of": 4,
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/4.json",
+  "related": [],
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/4/",
+  "authors": [],
+  "keywords": [],
+  "children": [
+    {
+      "slug": "guides/paged-hub/when-a-hub-is-paged",
+      "title": "When a hub is paged",
+      "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/"
+    }
+  ],
+  "markdown": "- [When a hub is paged](https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/)\n",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/page/4.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/page/4/"
+    },
+    "related": []
+  }
+}

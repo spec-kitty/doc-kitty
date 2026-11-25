@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/capped-hub/the-capped-entry/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/capped-hub/the-capped-entry/</id>
+  <title>The capped entry</title>
+  <updated>2026-11-23T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/capped-hub/the-capped-entry/"/>
+  <summary>The one sidebar entry that stands for a capped hub&apos;s pages.</summary>
+  <content type="html">&lt;span id=&quot;the-capped-entry&quot;&gt;&lt;/span&gt;
+&lt;p&gt;The entry reads “5 pages” here. Its text comes from the &lt;code dir=&quot;auto&quot;&gt;sidebar.cappedLabel&lt;/code&gt;
+site option, else the &lt;code dir=&quot;auto&quot;&gt;dockitty.sidebar.cappedEntry&lt;/code&gt; UI string for the page’s
+language, else “{count} pages”. It links to the hub, and it is marked as the
+current page on every page below the hub.&lt;/p&gt;</content>
+</entry>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/</id>
+  <title>Translating the pagination</title>
+  <updated>2026-11-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/translating-the-pagination/"/>
+  <summary>The pagination&apos;s name and labels are UI strings that a site can translate.</summary>
+  <content type="html">&lt;span id=&quot;translating-the-pagination&quot;&gt;&lt;/span&gt;
+&lt;p&gt;The pagination uses five UI strings, with these English defaults:&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Key&lt;/th&gt;&lt;th&gt;Default&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;code dir=&quot;auto&quot;&gt;dockitty.hub.pagination.label&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Pagination&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;code dir=&quot;auto&quot;&gt;dockitty.hub.pagination.previous&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Previous&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;code dir=&quot;auto&quot;&gt;dockitty.hub.pagination.next&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Next&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;code dir=&quot;auto&quot;&gt;dockitty.hub.pagination.page&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Page {page}&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;code dir=&quot;auto&quot;&gt;dockitty.hub.pagination.title&lt;/code&gt;&lt;/td&gt;&lt;td&gt;{title}, page {page}&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;Add a translation for any of them in the site’s &lt;code dir=&quot;auto&quot;&gt;src/content/i18n/&amp;#x3C;locale&gt;.json&lt;/code&gt;.
+A string a locale does not translate falls back to English.&lt;/p&gt;</content>
+</entry>

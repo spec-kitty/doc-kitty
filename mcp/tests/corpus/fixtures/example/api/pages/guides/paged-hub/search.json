@@ -1,0 +1,33 @@
+{
+  "slug": "guides/paged-hub/search",
+  "route": "/guides/paged-hub/search/",
+  "section": "guides",
+  "title": "Search",
+  "description": "Listing pages are in the site search, and a child's own page still ranks first for its title.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-24T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/search.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Search\n\nListing pages are indexed like any other page, so a search finds them. The\npage numbers in the pagination are not indexed.\n\nA child's title is the heading of its own page, so a search for that title\nleads to the child first, not to the listing page that lists it.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/paged-hub/search.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/paged-hub/search/"
+    },
+    "related": []
+  }
+}

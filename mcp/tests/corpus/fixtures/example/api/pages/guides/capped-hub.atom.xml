@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/capped-hub/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/capped-hub/</id>
+  <title>Capped hub</title>
+  <updated>2026-11-23T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/capped-hub/"/>
+  <summary>A hub with more children than its sidebar child cap, so the sidebar shows one entry for its pages.</summary>
+  <content type="html">&lt;span id=&quot;capped-hub&quot;&gt;&lt;/span&gt;
+&lt;p&gt;This hub has five pages and a sidebar child cap of 3, set with
+&lt;code dir=&quot;auto&quot;&gt;sidebar_child_cap: 3&lt;/code&gt; in this page’s frontmatter. Because five is more than
+three, the sidebar shows this hub’s overview link and one “5 pages” entry
+instead of the five pages.&lt;/p&gt;
+&lt;p&gt;Open any of the pages below. The “5 pages” entry is marked as the current page,
+and the previous and next links walk the pages in the order this list shows.&lt;/p&gt;</content>
+</entry>

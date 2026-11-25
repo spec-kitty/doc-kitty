@@ -1,6 +1,6 @@
 {
   "version": "2",
-  "generated_by": "doc-kitty-gherkin/0.6.0",
+  "generated_by": "doc-kitty-gherkin/0.7.1",
   "count": 3,
   "results": {
     "report": "reports/cucumber.ndjson",

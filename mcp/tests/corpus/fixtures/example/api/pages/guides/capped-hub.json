@@ -1,0 +1,33 @@
+{
+  "slug": "guides/capped-hub",
+  "route": "/guides/capped-hub/",
+  "section": "guides",
+  "title": "Capped hub",
+  "description": "A hub with more children than its sidebar child cap, so the sidebar shows one entry for its pages.",
+  "type": "Guide",
+  "doc_status": "active",
+  "kind": "Hub",
+  "tags": [],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-23T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/",
+  "authors": [],
+  "keywords": [],
+  "markdown": "# Capped hub\n\nThis hub has five pages and a sidebar child cap of 3, set with\n`sidebar_child_cap: 3` in this page's frontmatter. Because five is more than\nthree, the sidebar shows this hub's overview link and one \"5 pages\" entry\ninstead of the five pages.\n\nOpen any of the pages below. The \"5 pages\" entry is marked as the current page,\nand the previous and next links walk the pages in the order this list shows.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/guides/capped-hub.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/guides/capped-hub/"
+    },
+    "related": []
+  }
+}

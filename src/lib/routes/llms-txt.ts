@@ -29,7 +29,9 @@ import {
   feedsSurface,
 } from '../sections.js';
 import { DESCRIPTION_MAX } from '../schema.js';
-import { absolute, docsRoot, MCP_BUILD_FROM_SOURCE_URL, mcpLaunchUsage } from './shared.js';
+import { absolute, docsRoot, MCP_BUILD_FROM_SOURCE_URL, mcpLaunchUsage, pagedHubListing, readHubData } from './shared.js';
+import { listingRange, toListingRecord } from './agent-index.js';
+import type { HubListingPage } from '../child-cap.js';
 import { collectDocEntries } from '../docs-index.js';
 import { isScenarioIndexed } from './scenario-index-filter.js';
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
@@ -132,6 +134,13 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
       lines.push(`Scenario index: ${absolute(site, '/api/scenarios.json')}`, '');
     }
 
+    // The paged hub listing (#342), by hub: empty without a paged hub.
+    const hubData = new Map(readHubData());
+    const listingByHub = new Map<string, HubListingPage[]>();
+    for (const page of pagedHubListing()) {
+      listingByHub.set(page.hub, [...(listingByHub.get(page.hub) ?? []), page]);
+    }
+
     // Group by section, preserving the section order rankForAgents produced.
     const sections = new Map<string, typeof ranked>();
     for (const entry of ranked) {
@@ -176,6 +185,13 @@ export function llmsTxtRoute(options: LlmsTxtRouteOptions): APIRoute {
         const url = absolute(site, routeOfSlug(entry.slug));
         const note = entry.data.description ? `: ${entry.data.description}` : '';
         lines.push(`- [${entry.data.title}](${url})${note}`);
+        // #342: a paged hub's listing pages from 2 on, right after the hub's own
+        // line (research R5: each once, the children keep their single line).
+        for (const page of listingByHub.get(entry.slug) ?? []) {
+          const data = hubData.get(page.hub)!;
+          const record = toListingRecord(page, { title: entry.data.title, type: null, doc_status: 'active' }, data);
+          lines.push(`- [${record.title}](${absolute(site, record.route)}): children ${listingRange(page, data)} of ${data.count}`);
+        }
       }
       lines.push('');
     }

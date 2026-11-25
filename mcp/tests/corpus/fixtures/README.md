@@ -33,5 +33,12 @@ OpenAPI version records (`reference/api/{main,v1,v1-1}`, carrying the
 OpenAPI-only `released`/`rawDocumentUrl`/`sha256` keys) are appended after
 the docs records, and the page-artifact Atom files (`*.atom.xml`) now sit
 beside the page JSON as they do in a real `dist/api`.
+Re-minted 2026-11-24 (large-hubs paged hub listing, #342): 92 pages. It
+picks up the pages added since (slice 1's `guides/capped-hub`, among others)
+and the paged hub listing records (`guides/paged-hub/page/{2,3,4}`, carrying
+`listing_of`/`page`/`of` and, on the page artifact, `children`), placed after
+the docs records and before the OpenAPI records. Minted without the PlantUML
+render server: the API artifacts carry the markdown source, not rendered SVG,
+so it does not change them.
 WP05 owns `mcp/tests/fixtures/**` separately - keep this tree WP02-scoped and
 re-mintable via the commands above.

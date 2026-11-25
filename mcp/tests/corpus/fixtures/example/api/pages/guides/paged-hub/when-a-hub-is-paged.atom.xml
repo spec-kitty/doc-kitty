@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xml:base="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/">
+  <id>https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/</id>
+  <title>When a hub is paged</title>
+  <updated>2026-11-24T00:00:00.000Z</updated>
+  <author><name>DocKitty Example</name></author>
+  <link rel="alternate" type="text/html" href="https://spec-kitty.github.io/doc-kitty/guides/paged-hub/when-a-hub-is-paged/"/>
+  <summary>Only a hub over its sidebar child cap is paged, and only when its children outnumber its page size.</summary>
+  <content type="html">&lt;span id=&quot;when-a-hub-is-paged&quot;&gt;&lt;/span&gt;
+&lt;p&gt;A hub is paged when two things are true:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;it has more children than its sidebar child cap, so the sidebar shows one
+entry for them;&lt;/li&gt;
+&lt;li&gt;it has more children than its page size.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Any other hub lists all its children on its own page, exactly as before.&lt;/p&gt;</content>
+</entry>

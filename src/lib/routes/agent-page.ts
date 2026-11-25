@@ -26,7 +26,7 @@ import type { AgentLink, AgentPageMeasure, AgentPagePayload } from '../contract.
 import type { AudienceEntry, DocKittyFrontmatter, ResolvedRelated } from '../metadata.js';
 import { pageSourceId, resolveRelated, slugFromEntryId, toAgentRecord } from '../metadata.js';
 import { routeOfSlug } from '../vocabulary-core.mjs';
-import { absolute, docsRoot, memoizedBuildIdForEntries } from './shared.js';
+import { absolute, docsRoot, memoizedBuildIdForEntries, pagedHubListing, readHubData } from './shared.js';
 import { resolveClassification } from '../measures-core.mjs';
 import { loadMeasuresCatalog, type MeasuresCatalog } from '../measures-loader.mjs';
 import { buildDocsIndex, collectDocEntries } from '../docs-index.js';
@@ -34,7 +34,7 @@ import { readAgentIncludes, spliceAgentIncludes } from '../gherkin/agent-include
 import { DK_OPENAPI_ENV } from '../internal-env.mjs';
 import { readPublication } from '../openapi/publication.js';
 import { openApiSummaryMarkdown } from '../openapi/summary.mjs';
-import { openApiKeywords, toOpenApiVersionRecord } from './agent-index.js';
+import { openApiKeywords, toListingRecord, toOpenApiVersionRecord } from './agent-index.js';
 
 export interface AgentPageRouteOptions {
   /** Site-owned surfaces to link from `_links`. Defaults match the worked example. */
@@ -69,7 +69,7 @@ export interface OpenApiPagePayload extends AgentPagePayload {
  * for the WP03 synthetic pages — just the `openApi` label of a spec version
  * (`id`/`body` are empty placeholders the branch never reads).
  */
-export type AgentPageRouteProps = { id: string; body: string; openApi?: string };
+export type AgentPageRouteProps = { id: string; body: string; openApi?: string; listing?: string };
 
 /**
  * A page's `tom_classification`, resolved against the measures catalog into the
@@ -125,11 +125,20 @@ export function agentPageRoute(options: AgentPageRouteOptions = {}) {
         });
       }
     }
+    // #342: one page artifact per listing page from 2 on of every paged hub
+    // (`<hub>/page/<n>`, never a docs slug: a paged hub with such a child fails
+    // the build). No paged hub adds no path.
+    for (const page of pagedHubListing()) {
+      paths.push({ params: { slug: page.slug }, props: { id: '', body: '', listing: page.slug } });
+    }
     return paths;
   };
 
   const GET: APIRoute = async ({ props, site }) => {
-    const { id, body, openApi } = props as AgentPageRouteProps;
+    const { id, body, openApi, listing } = props as AgentPageRouteProps;
+    if (listing !== undefined) {
+      return listingResponse(listing, site, linkIndex, indexPath);
+    }
     // WP03: the synthetic branch. The label alone identifies the version (it
     // is unique per site by the option's own validation); a label the
     // publication no longer carries is a 404, like a removed docs entry.
@@ -269,6 +278,62 @@ async function openApiResponse(
     },
   };
 
+  return new Response(JSON.stringify(payload, null, 2), {
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+  });
+}
+
+/**
+ * The listing branch of {@link agentPageRoute}'s GET (#342): the page artifact of
+ * one listing page of a paged hub. The record is the index's (`toListingRecord`),
+ * plus `children` (that page's children in the hub's order, with title and URL)
+ * and a Markdown list of them, so an agent can walk a hub page by page. The
+ * `buildId` is the stamp every other artifact of the build carries.
+ */
+async function listingResponse(
+  slug: string,
+  site: URL | undefined,
+  linkIndex: boolean,
+  indexPath: string,
+): Promise<Response> {
+  const page = pagedHubListing().find((candidate) => candidate.slug === slug);
+  const data = page ? new Map(readHubData()).get(page.hub) : undefined;
+  const entries = await getCollection('docs');
+  const bySlug = new Map(entries.map((entry) => [slugFromEntryId(entry.id), entry]));
+  const hubEntry = page ? bySlug.get(page.hub) : undefined;
+  if (!page || !data || !hubEntry) {
+    return new Response(JSON.stringify({ error: 'not found' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    });
+  }
+  const hubRecord = toAgentRecord({ slug: page.hub, data: hubEntry.data as unknown as DocKittyFrontmatter });
+  const record = toListingRecord(page, hubRecord, data);
+  const url = absolute(site, record.route);
+  const source = absolute(site, `/api/pages/${record.slug}.json`);
+  const children = page.children.map((child) => {
+    const childEntry = bySlug.get(child.slug);
+    const title = (childEntry?.data as { title?: string } | undefined)?.title ?? child.label;
+    return { slug: child.slug, title, url: absolute(site, routeOfSlug(child.slug)) };
+  });
+  const payload = {
+    ...record,
+    source,
+    related: [],
+    audience: [],
+    url,
+    authors: [],
+    keywords: [],
+    children,
+    markdown: children.map((child) => `- [${child.title}](${child.url})`).join('\n') + '\n',
+    buildId: memoizedBuildIdForEntries(entries),
+    _links: {
+      self: { href: source },
+      ...(linkIndex ? { up: { href: absolute(site, indexPath) } } : {}),
+      html: { href: url },
+      related: [],
+    },
+  };
   return new Response(JSON.stringify(payload, null, 2), {
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
   });

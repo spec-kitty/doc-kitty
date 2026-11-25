@@ -29,7 +29,7 @@ describe('get_site_info', () => {
       expect(info.baseUrl).toMatch(/^\/.*fixtures\/example$/); // fs launch: the local dist dir
       expect(info.buildId).toMatch(/^[0-9a-f]{64}$/);
       // 70 docs pages + the 3 synthetic OpenAPI version records (WP03).
-      expect(info.pageCount).toBe(73);
+      expect(info.pageCount).toBe(92);
     });
 
     it('announces all surfaces live', () => {

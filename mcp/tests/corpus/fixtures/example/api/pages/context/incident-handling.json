@@ -1,0 +1,51 @@
+{
+  "slug": "context/incident-handling",
+  "route": "/context/incident-handling/",
+  "section": "context",
+  "title": "Incident handling",
+  "description": "How the example organisation handles an incident, written once for every product and classified as organisation-wide measures.",
+  "type": "Context",
+  "doc_status": "active",
+  "kind": "Explanation",
+  "tags": [
+    "operations",
+    "tom"
+  ],
+  "related": [],
+  "priority": 0.5,
+  "updated": "2026-11-22T00:00:00Z",
+  "source": "https://spec-kitty.github.io/doc-kitty/api/pages/context/incident-handling.json",
+  "audience": [],
+  "url": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/",
+  "authors": [],
+  "keywords": [],
+  "tom_classification": [
+    {
+      "measure": "availability-restoration",
+      "label": "Restoring availability and access after an incident",
+      "nature": "technical",
+      "scope": "organisation"
+    },
+    {
+      "measure": "accountability",
+      "label": "Accountability",
+      "nature": "organisational",
+      "scope": "organisation",
+      "note": "Every incident gets a named owner and a written review."
+    }
+  ],
+  "markdown": "# Incident handling\n\n> [!NOTE]\n> This page is an invented example of a TOM classification. It is not legal\n> advice.\n\nThe example organisation handles incidents the same way for every product it\nruns. This page describes that process once. Product pages link here instead of\nrepeating it.\n\n## How an incident runs\n\n1. Whoever notices the problem opens an incident and names an owner.\n2. The owner restores service from the latest backup when data is affected.\n3. Within five working days, the owner writes a short review: what happened,\n   why, and what changes.\n\n## Why the classification says organisation\n\nThe process does not belong to one system. Its `tom_classification` entries\ncarry `scope: organisation`, so a later export can list these measures once,\nas inherited, for every product that links here.",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
+  "_links": {
+    "self": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/pages/context/incident-handling.json"
+    },
+    "up": {
+      "href": "https://spec-kitty.github.io/doc-kitty/api/index.json"
+    },
+    "html": {
+      "href": "https://spec-kitty.github.io/doc-kitty/context/incident-handling/"
+    },
+    "related": []
+  }
+}

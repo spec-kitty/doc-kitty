@@ -19,7 +19,7 @@
   ],
   "keywords": [],
   "markdown": "This deck deliberately contains no diagrams, so its route must resolve zero Mermaid\nruntime chunks — the footprint guard short-circuits before importing Mermaid.\n\n## Where we are\n\nA short text-only slide.\n\n## Where we are going\n\nAnother text-only slide, so the deck has more than one slide boundary for reveal to\nenhance.",
-  "buildId": "1d3d0f61a700575a59a33f6fe3a8ac6cbbd28fdeb3991ca1dc2d791a4979fccc",
+  "buildId": "c6d7e3a0098fbbfea0b8b368010ba1e4351cc7feabdab259fb8e2539d681425d",
   "_links": {
     "self": {
       "href": "https://spec-kitty.github.io/doc-kitty/api/pages/presentations/roadmap-deck.json"
