@@ -110,6 +110,9 @@ export default defineConfig({
     // blockquote renders as the matching native aside. guides/github-alerts is
     // the fixture.
     githubAlerts: true,
+    // Opt-in evidence index (#401): builds /api/tom-annex.json from the example's
+    // classified pages. Evidence index, not the contractual annex.
+    tomAnnex: true,
     // WP01 flexible-section-identity (adopter-loader-migration #42, anti-laziness
     // M3): both basenames collapse to their section slug in the SAME build, so
     // WP04's `index.md`-based rename target coexists with the existing

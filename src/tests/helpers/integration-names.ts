@@ -31,6 +31,8 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:toc-rail',
   'doc-kitty:lightbox',
   'doc-kitty:content-graph',
+  // Opt-in evidence index (#401, `tomAnnex: true`); it injects its route only for a classified site.
+  'doc-kitty:tom-annex',
   // Always on unless `pageFormats.atom` is false (page-chrome FR-020); before served-surfaces.
   'doc-kitty:page-atom',
   'doc-kitty:served-surfaces',
@@ -45,7 +47,7 @@ export const PINNED_FULL_INTEGRATION_ORDER: readonly string[] = [
   'doc-kitty:sidebar-icons',
 ];
 
-/** The opt-in seams registered BEFORE Starlight, each absent on the plain path. */
+/** The opt-in seams, each absent on the plain path (all before Starlight, except the evidence index). */
 const OPT_IN_SEAMS: readonly string[] = [
   'doc-kitty:diagrams',
   'doc-kitty:remark-directive',
@@ -54,6 +56,7 @@ const OPT_IN_SEAMS: readonly string[] = [
   'doc-kitty:gherkin',
   'doc-kitty:gherkin-fence',
   'doc-kitty:github-alerts',
+  'doc-kitty:tom-annex',
 ];
 
 /**

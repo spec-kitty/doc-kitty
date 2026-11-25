@@ -212,5 +212,15 @@ export const PRODUCER_REGISTRY = createProducerRegistry([
     retiredBy: 'doc-kitty/glossary',
     regenerateHint: 'run `astro build` or `astro dev`, which rewrites the glossary pages',
   },
+  {
+    // The evidence index's hub page (#401, ADR-0087). A Hub in any one section,
+    // narrowed per call to the configured hub path, like Gherkin's. The
+    // snapshot `_meta/tom-annex.snapshot.json` is not a page and is not scoped.
+    id: 'doc-kitty-tom-annex',
+    role: 'ownership',
+    scope: { type: 'section', kinds: ['Hub'] },
+    recognition: 'stamp-and-scope',
+    regenerateHint: 'build, then run `dockitty-tom-annex --dist <dist> [--snapshot <path>] [--hub <path>]` (see docs/guides/tom-annex.md)',
+  },
   { id: 'doc-kitty-scaffold', role: 'provenance' },
 ]);

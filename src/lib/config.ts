@@ -58,6 +58,7 @@ import {
 import { tocRailIntegration } from './integrations/toc-rail.js';
 import { lightboxIntegration } from './integrations/lightbox.js';
 import { contentGraphIntegration } from './integrations/content-graph.js';
+import { tomAnnexIntegration } from './integrations/tom-annex.js';
 import { pageAtomIntegration } from './integrations/page-atom.js';
 import { servedSurfacesIntegration } from './integrations/served-surfaces.js';
 import { sidebarIconsIntegration } from './integrations/sidebar-icons.js';
@@ -320,6 +321,16 @@ export interface DocKittyOptions {
    * the pass is a no-op on `kind: Presentation` pages.
    */
   githubAlerts?: boolean;
+  /**
+   * Opt-in evidence index (#401, operator ruling on #455). **Default off.** Set
+   * `true` (only the boolean `true`; any other value means off) to build `/api/tom-annex.json`, which lists, per measure of the
+   * measures catalog, the published pages classified with `tom_classification`
+   * and the measures none evidences. With it on, the index is linked from
+   * `api/index.json` as `_links.tomAnnex` and copied into the OKF export; a site
+   * with no published classified page still builds nothing. Evidence index, not
+   * the contractual annex: see `docs/guides/tom-annex.md`.
+   */
+  tomAnnex?: boolean;
   /**
    * Opt-in Gherkin (ADR-0046, widened by ADR-0051). **Default off**, the
    * byte-identical twin of `diagrams: false`. With it absent the integrations
@@ -634,6 +645,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     plantumlAllowExternal,
     markua = false,
     githubAlerts = false,
+    tomAnnex = false,
     indexBasename,
     exclude,
     gherkin,
@@ -1018,6 +1030,11 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // agent index's `_links.contentGraph` never dangles. Registers no remark/rehype
     // plugin, so no plugin-order pin moves.
     contentGraphIntegration(docsDir, indexBasename),
+    // Opt-in evidence index (#401): with `tomAnnex: true`, injects `/api/tom-annex.json`
+    // when a published page carries `tom_classification`. Off by default, so a site
+    // that classifies pages publishes nothing new until it opts in. Before
+    // served-surface detection, which reads the injected route.
+    ...(tomAnnex === true ? [tomAnnexIntegration(docsDir, indexBasename)] : []),
     // Per-page Atom entries (FR-020): on unless `pageFormats.atom` is false. Before
     // served-surface detection, which reads the injected route.
     ...(pageFormats?.atom === false ? [] : [pageAtomIntegration(title)]),

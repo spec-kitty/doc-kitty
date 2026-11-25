@@ -125,7 +125,7 @@ function withClientMode<T>(build: () => T): T {
 // `gherkin: true` turns the in-page Gherkin stage on (ADR-0051) WITHOUT `sources`,
 // so the filesystem-reading codegen integration is not registered.
 const buildArray = () =>
-  defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true, gherkin: true, githubAlerts: true });
+  defineDocKittyIntegrations({ title: 'Docs', markua: true, diagrams: true, gherkin: true, githubAlerts: true, tomAnnex: true });
 
 function buildStack() {
   return withClientMode(() => enumerateDocKittyRemarkStack(buildArray()));

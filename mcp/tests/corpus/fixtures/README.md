@@ -35,3 +35,11 @@ the docs records, and the page-artifact Atom files (`*.atom.xml`) now sit
 beside the page JSON as they do in a real `dist/api`.
 WP05 owns `mcp/tests/fixtures/**` separately - keep this tree WP02-scoped and
 re-mintable via the commands above.
+
+Amended 2026-11-23 (#401, tom-annex-export WP03), **by hand, not re-minted**:
+`example/api/index.json` gained `_links.tomAnnex`, with the exact value a fresh
+`pnpm --filter example build` emits (the evidence index is linked because the
+example has classified pages). Nothing else changed. A full re-mint needs the
+PlantUML render server above, which was not available where WP03 ran; it also
+picks up the pages added since the last re-mint (73 → 75 records), so do it
+with the commands above wherever that server runs.

@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "mission_slug": "tom-annex-export-01M84YDP",
+  "mission_id": "01M84YDPJCBFNXNWKGGVX39KCX",
+  "mission_branch": "kitty/mission-tom-annex-export-01M84YDP",
+  "target_branch": "feat/401-tom-annex-export",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/lib/tom-annex/core.mjs",
+        "src/lib/tom-annex/tom-annex.schema.json",
+        "src/tests/fixtures/tom-annex/**",
+        "src/tests/tom-annex-core.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/lib/routes/content-graph.ts",
+        "src/lib/routes/site-graph.ts",
+        "src/tests/site-graph.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/lib/config.ts",
+        "src/lib/contract.ts",
+        "src/lib/integrations/tom-annex.ts",
+        "src/lib/routes/agent-index.ts",
+        "src/lib/routes/tom-annex-injected.ts",
+        "src/lib/routes/tom-annex.ts",
+        "src/lib/served-surfaces.ts",
+        "src/lib/tom-annex/scan.mjs",
+        "src/package.json",
+        "src/tests/fixtures/tom-annex-scan/**",
+        "src/tests/tom-annex-route.test.ts",
+        "src/tests/tom-annex-scan.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-b"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/lib/okf-export/core.mjs",
+        "src/lib/okf-export/disk.mjs",
+        "src/lib/okf-export/integration.ts",
+        "src/scripts/export-okf.mjs",
+        "src/tests/okf-export-tom-annex.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/lib/producers.mjs",
+        "src/lib/tom-annex/stamp.mjs",
+        "src/tests/tom-annex-stamp.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/scripts/assert-build-artifacts.mjs",
+        "src/tests/assert-build-artifacts-tom-annex.test.ts",
+        "src/tests/draft-publication-build.test.ts",
+        "src/tests/tom-annex-build.test.ts",
+        "src/vitest.workspace.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-c",
+        "lane-d"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "example/docs/_meta/tom-annex.snapshot.json",
+        "example/docs/context/evidence-index/index.md",
+        "package.json",
+        "src/lib/tom-annex/check.mjs",
+        "src/lib/tom-annex/hub-page.mjs",
+        "src/scripts/tom-annex.mjs",
+        "src/tests/tom-annex-check.test.ts",
+        "src/tests/tom-annex-cli.test.ts",
+        "src/tests/tom-annex-hub-page.test.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering",
+        "tracker-integration"
+      ],
+      "depends_on_lanes": [
+        "lane-f"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "docs/architecture/metadata-model.md",
+        "docs/changelog/unreleased/401-tom-annex-export.md",
+        "docs/guides/tom-annex.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [
+        "lane-a",
+        "lane-g"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-11-23T21:24:16.893258+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP08"
+  ],
+  "planning_commit_sha": "26170c9169c7dc1a3149ff935ff53ddac86f8817"
+}

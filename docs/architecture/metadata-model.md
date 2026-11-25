@@ -541,6 +541,12 @@ it is, the rules above describe the code.
   build time. External producers commit their output, and their freshness check
   runs in their own CI.
 
+The evidence index (#401) is the first producer built on the contract.
+`api/tom-annex.json` is an artifact derived at build time under D5: it carries
+the four-key stamp with an `at` taken from its inputs, never the build clock,
+and its opt-in snapshot and hub page answer `dockitty-tom-annex --check`. See
+[the evidence-index guide](../guides/tom-annex.md).
+
 ### `verified`
 
 Either a list of `{ by: actor, at: instant }` entries or one bare mapping. The

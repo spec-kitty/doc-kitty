@@ -10,7 +10,7 @@ import {
   isGeneratedPage,
 } from '../scripts/validate-frontmatter.mjs';
 import { parseActor, isActor, normaliseInstant, parseRequiredFields } from '../lib/vocabulary-core.mjs';
-import { GHERKIN_PRODUCER, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, toolkitVersion } from '../lib/generator-stamp.mjs';
+import { GHERKIN_PRODUCER, GLOSSARY_PRODUCER, makeStamp, isGeneratedStamp, keepsBy, toolkitVersion } from '../lib/generator-stamp.mjs';
 import { collectDanglingRelated } from '../scripts/check-links.mjs';
 import { docKittyFields } from '../lib/schema.ts';
 
@@ -844,6 +844,66 @@ describe('generator-stamp (#177, FR-008, C-004)', () => {
         content_hash: previous.content_hash,
       });
     }
+  });
+
+  // #455 confirm review F1: one predicate decides whether a previous `by` may be
+  // kept, so every producer that carries `by` over applies the same rule.
+  it('keepsBy accepts only this producer\'s own stamp with a version-shaped suffix (#455 F1)', () => {
+    for (const by of ['doc-kitty-gherkin/0.0.1', 'doc-kitty-gherkin/0.2.0-rc.1', 'doc-kitty-gherkin/1.0.0+build.5']) {
+      expect(keepsBy(by, 'doc-kitty-gherkin'), by).toBe(true);
+    }
+    for (const by of [
+      'doc-kitty-glossary/0.0.1',
+      'doc-kitty-gherkin/',
+      'doc-kitty-gherkin/ ',
+      'doc-kitty-gherkin/garbage',
+      'doc-kitty-gherkin/0.7',
+      'doc-kitty-gherkinx/0.0.1',
+      // Same length as the producer, so only the ownership half rejects it.
+      'doc-kitty-gherkiN/0.0.1',
+      undefined,
+      42,
+    ]) {
+      expect(keepsBy(by, 'doc-kitty-gherkin'), String(by)).toBe(false);
+    }
+    // Two producer ids of the same length: the version half alone would accept it.
+    expect(keepsBy('doc-kitty-scaffold/0.0.1', 'doc-kitty-glossary')).toBe(false);
+  });
+
+  // #455 operator ruling (2026-11-25, NIT 3): the version must be SemVer 2.0.0,
+  // with npm semver's bound on each number, for every producer that carries `by`.
+  const LOOSE_VERSIONS = [
+    '01.00.00', // leading zeros
+    '1.01.0',
+    '1.0.0-01', // a numeric pre-release identifier with a leading zero
+    '1.0.0+.', // an empty build identifier
+    '1.0.0+',
+    '1.0.0-',
+    '1.0.0-rc..1',
+    '1.0.0-rc.1+b..2',
+    '9007199254740992.0.0', // above Number.MAX_SAFE_INTEGER
+    `1.0.0-${'a'.repeat(260)}`, // over 256 characters
+  ];
+  const STRICT_VERSIONS = ['0.0.0', '0.7.1', '0.0.0-golden', '0.2.0-rc.1', '1.0.0+build.5', '1.0.0-alpha.0+001', '1.0.0--', '99999999999999.0.0'];
+
+  it.each(['doc-kitty-gherkin', 'doc-kitty-glossary', 'doc-kitty-tom-annex'])(
+    'keepsBy refuses a loose version shape and accepts a SemVer 2.0.0 one, for %s (#455 NIT 3)',
+    (producer) => {
+      for (const v of LOOSE_VERSIONS) expect(keepsBy(`${producer}/${v}`, producer), v).toBe(false);
+      for (const v of STRICT_VERSIONS) expect(keepsBy(`${producer}/${v}`, producer), v).toBe(true);
+    },
+  );
+
+  it.each(['doc-kitty-gherkin', 'doc-kitty-glossary'])('makeStamp replaces a loose-version `by`, for %s (#455 NIT 3)', (producer) => {
+    const previous = { by: `${producer}/01.00.00`, at: '2026-01-01T00:00:00Z', content_hash: `sha256:${'a'.repeat(12)}` };
+    for (const v of LOOSE_VERSIONS) {
+      expect(makeStamp({ producer, hash: 'a'.repeat(64), previous: { ...previous, by: `${producer}/${v}` }, now: NOW }).by, v).toBe(
+        `${producer}/${toolkitVersion()}`,
+      );
+    }
+    expect(makeStamp({ producer, hash: 'a'.repeat(64), previous: { ...previous, by: `${producer}/99999999999999.0.0` }, now: NOW }).by).toBe(
+      `${producer}/99999999999999.0.0`,
+    );
   });
 });
 

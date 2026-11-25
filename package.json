@@ -29,6 +29,8 @@
     "changelog:release": "node src/scripts/changelog.mjs --release",
     "validate:features": "node src/scripts/generate-feature-pages.mjs --root example --sources features --docs docs --section behaviour --titles hr=HR --default-glossary-context shipping=shipping --default-glossary-context hr=hr --check",
     "generate:features": "node src/scripts/generate-feature-pages.mjs --root example --sources features --docs docs --section behaviour --titles hr=HR --default-glossary-context shipping=shipping --default-glossary-context hr=hr",
+    "validate:tom-annex": "node src/scripts/tom-annex.mjs --dist example/dist --snapshot example/docs/_meta/tom-annex.snapshot.json --hub example/docs/context/evidence-index/index.md --check",
+    "generate:tom-annex": "node src/scripts/tom-annex.mjs --dist example/dist --snapshot example/docs/_meta/tom-annex.snapshot.json --hub example/docs/context/evidence-index/index.md",
     "validate:catalog": "node src/scripts/validate-catalog.mjs docs example/docs",
     "packs:sync-contract": "node src/scripts/packs-sync-contract.mjs",
     "assert:artifacts": "node src/scripts/assert-build-artifacts.mjs example/dist",
