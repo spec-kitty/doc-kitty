@@ -224,7 +224,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Guide, ADR-0089, changelog fragment, cross-refs; cappedHubCaps documented in the guide's API section (contracts/ not edited); CSP hash sha256-dlpk7sxv9SQrYU5m52WcuINGV5NwRI/Y3N3Ida3KAhE=; validators clean; full pnpm test green (src 241/4745, mcp 23/181).",
-        "Cycle 2: fold review-cycle-1 items 1-7 and the Q9 ruling"
+        "Cycle 2: fold review-cycle-1 items 1-7 and the Q9 ruling",
+        "Cycle 2: review items 1-7 folded; Q9 decided (docs here, code on wip/342-locale-alternates cd1a080f); full pnpm test src 252/4873, mcp 24/185"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
