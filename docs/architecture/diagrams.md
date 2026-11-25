@@ -152,21 +152,22 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
   wraps it in `<figure role="group" aria-labelledby>` + `<figcaption>`.
 - **Labels fit their box and stay readable (#369, #370).**
   - *Font.* Mermaid sizes each HTML label's box when it renders the diagram.
-    Each build-rendered Mermaid SVG carries a rule that draws its HTML labels in
-    the font they were measured in: `Arial, Helvetica, "Liberation Sans",
-    Arimo`, all with Arial's widths. The exception is a diagram with an
-    `%%{init}%%` font, which sets the measurement (see *Author font*). So a site
-    font cannot widen a label past its box, unless the reader's device has none
-    of these fonts and falls back to a wider sans font. Labels drawn as SVG
+    Each build-rendered Mermaid HTML label is measured and shown in one font:
+    `Arial, Helvetica, "Liberation Sans", Arimo`, all with Arial's widths. So a
+    site font cannot widen a label past its box, unless the reader's device has
+    none of these fonts and falls back to a wider sans font. Labels drawn as SVG
     text, such as sequence diagram labels, keep Mermaid's own sizing.
-  - *Author font.* The site's font does not reach the labels. A font set in an
-    `%%{init}%%` directive is not shown either, but Mermaid still measures the
-    labels in it. If that font is narrower than Arial on the build machine, as a
-    serif font is, a label can overflow its box. A font set on one node with
-    `classDef` or `style` is kept, because Mermaid's rule for it is more specific
-    than the toolkit's. Such a label can also overflow its box when the font it
-    is shown in is wider than the one it was measured in. Author fonts are
-    tracked in [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
+  - *Author font.* The site's font does not reach the labels. A `fontFamily` set
+    in an `%%{init}%%` directive or front-matter `config`, including
+    `themeVariables.fontFamily`, is neither shown nor used for measurement: the
+    build drops it, and keeps every other directive value. The sequence diagram
+    font keys (`actorFontFamily`, `noteFontFamily`, `messageFontFamily`) are not
+    dropped yet; see [#458](https://github.com/spec-kitty/doc-kitty/issues/458).
+    Fonts set in author CSS are kept: on one node with `classDef` or `style`, or
+    in an `%%{init}%%` `themeCSS` rule. Such a label can be measured in one font
+    and shown in another, and then overflow its box: a serif `themeCSS` font
+    clips a long label by about 9 px. Author fonts are tracked in
+    [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
   - *Author fills.* A fill the author sets does not follow the theme. A label on
     an opaque author fill is black or white, whichever contrasts more with it.
   - *See-through fills.* The page shows through, so the label gets black or white
