@@ -322,6 +322,39 @@ describe('findBaselessFeedUrls — RSS/llms.txt/agent-API internal absolute URLs
     });
   });
 
+  it('FAIL: base-less item links and guids in the sub-processor feed are reported (ADR-0086)', () => {
+    const dist = makeTmpDir();
+    writeDistFile(
+      dist,
+      'subprocessors.xml',
+      '<rss><channel><link>https://spec-kitty.github.io/doc-kitty/</link><item>' +
+        '<link>https://spec-kitty.github.io/api/subprocessors.json</link>' +
+        '<guid isPermaLink="false">https://spec-kitty.github.io/subprocessors.xml#a-added-2025-01-01</guid>' +
+        '</item></channel></rss>',
+    );
+
+    const failures = findBaselessFeedUrls(dist, '/doc-kitty', SITE);
+
+    expect(failures.map((f) => [f.file, f.url])).toEqual([
+      ['subprocessors.xml', 'https://spec-kitty.github.io/api/subprocessors.json'],
+      ['subprocessors.xml', 'https://spec-kitty.github.io/subprocessors.xml#a-added-2025-01-01'],
+    ]);
+  });
+
+  it('PASS: a base-prefixed sub-processor feed is not reported', () => {
+    const dist = makeTmpDir();
+    writeDistFile(
+      dist,
+      'subprocessors.xml',
+      '<rss><channel><link>https://spec-kitty.github.io/doc-kitty/</link><item>' +
+        '<link>https://spec-kitty.github.io/doc-kitty/api/subprocessors.json</link>' +
+        '<guid isPermaLink="false">https://spec-kitty.github.io/doc-kitty/subprocessors.xml#a-added-2025-01-01</guid>' +
+        '</item></channel></rss>',
+    );
+
+    expect(findBaselessFeedUrls(dist, '/doc-kitty', SITE)).toEqual([]);
+  });
+
   it('PASS: a base-prefixed URL in llms.txt is not reported', () => {
     const dist = makeTmpDir();
     writeDistFile(

@@ -250,6 +250,9 @@ export function findBaselessFeedUrls(distDir, base, siteOrigin) {
   const targets = [];
   const rssPath = path.join(distDir, 'rss.xml');
   if (existsSync(rssPath)) targets.push('rss.xml');
+  // The sub-processor change feed (ADR-0086) composes its URLs the same way.
+  const subprocessorFeedPath = path.join(distDir, 'subprocessors.xml');
+  if (existsSync(subprocessorFeedPath)) targets.push('subprocessors.xml');
   const llmsPath = path.join(distDir, 'llms.txt');
   if (existsSync(llmsPath)) targets.push('llms.txt');
   const apiDir = path.join(distDir, 'api');

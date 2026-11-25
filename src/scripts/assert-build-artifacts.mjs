@@ -3025,13 +3025,13 @@ async function main() {
   } catch (err) {
     fail(`api/index.json: not valid JSON (${err.message})`);
   }
-  for (const [key, suffix] of [
-    ['subprocessors', '/doc-kitty/api/subprocessors.json'],
-    ['subprocessorFeed', '/doc-kitty/subprocessors.xml'],
+  for (const [key, expected] of [
+    ['subprocessors', 'https://spec-kitty.github.io/doc-kitty/api/subprocessors.json'],
+    ['subprocessorFeed', 'https://spec-kitty.github.io/doc-kitty/subprocessors.xml'],
   ]) {
     const href = subIndexLinks[key]?.href;
-    if (typeof href !== 'string' || !href.endsWith(suffix)) {
-      fail(`api/index.json: _links.${key}.href is ${JSON.stringify(href)}, expected an absolute, base-aware URL ending ${suffix}`);
+    if (href !== expected) {
+      fail(`api/index.json: _links.${key}.href is ${JSON.stringify(href)}, expected the absolute, base-aware ${expected}`);
     }
   }
   ok('api/index.json: links the sub-processor document and feed under the site base');

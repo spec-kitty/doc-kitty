@@ -1007,8 +1007,9 @@ sub-processors stay in the document and in the feed history.
 
 **Validation.** `pnpm validate:catalog` checks the file without a build. A bad
 catalog fails the build too, before any page renders, with one error that lists
-every problem. Each message names the file, the record (or its position when the
-id is unusable) and the field. Both report the same problems in the same words.
+every problem. Each message names the file. A problem with one record also names
+the record (or its position when the id is unusable) and, where one applies, the
+field. Both report the same problems in the same words.
 
 **Limits.**
 
