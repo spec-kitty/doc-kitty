@@ -8,7 +8,8 @@
  * `<dist>` under `--base` on a loopback port, and prints each document (or the
  * `--sections` subset; `site` names the whole-site PDF) to `<out|dist>/pdf/<name>.pdf`.
  *
- * Per document it opens the route with the light theme stored and a light colour scheme,
+ * Per document it opens the route with the light theme stored, a fixed-seed
+ * `Math.random` (client-mode Mermaid jitters its edge paths with it) and a light colour scheme,
  * so the page loads light and client-mode diagrams draw light the first time (Chromium's
  * `page.pdf()` never fires `beforeprint`, and a later theme switch would make the
  * renderer redraw). It refuses a page that did not load light, emulates print media,
@@ -180,6 +181,28 @@ export function lightCheck() {
 }
 
 /**
+ * In the page, before any page script: store the light theme, so the page loads light
+ * and client-mode diagrams draw light the first time; and replace `Math.random` with a
+ * fixed-seed generator (mulberry32), so a client-mode Mermaid render, whose edge paths
+ * use it, draws the same bytes in every print. Self-contained, because Playwright
+ * serialises it into the page. Exported for the unit test.
+ */
+export function pdfPageInit() {
+  try {
+    window.localStorage.setItem('starlight-theme', 'light');
+  } catch {
+    /* storage off: the light colour scheme still gives the light theme */
+  }
+  let state = 0x9e3779b9;
+  Math.random = () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
  * In the page: whether every client-mode diagram that is laid out holds its drawing. The
  * renderer skips a node without a box, and `mermaid.run` marks a node `data-processed`
  * and puts its `<svg>` in place of the source; a node reset for a redraw holds neither.
@@ -195,13 +218,7 @@ export function clientDiagramsDrawn() {
 async function printDocument(browser, origin, doc, timeout) {
   const context = await browser.newContext();
   try {
-    await context.addInitScript(() => {
-      try {
-        window.localStorage.setItem('starlight-theme', 'light');
-      } catch {
-        /* storage off: the light colour scheme below still gives the light theme */
-      }
-    });
+    await context.addInitScript(pdfPageInit);
     const page = await context.newPage();
     // Print media from the start: the print layer shows every tab panel and opens every
     // disclosure, so client-mode diagrams inside them are boxed, and drawn, on load.

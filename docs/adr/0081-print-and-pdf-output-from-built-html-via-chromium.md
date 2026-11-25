@@ -141,7 +141,8 @@ defineDocKittyIntegrations({
 - `dockitty-pdf` serves a built `dist` and opens each print route in Chromium,
   the one Playwright already installs for build-mode diagrams (ADR-0040). It
   loads each page in the light theme, so client-mode diagrams draw light the
-  first time, refuses a page that did not load light, and waits until every
+  first time, with a fixed-seed `Math.random`, so their randomised edge paths
+  draw the same in every print, refuses a page that did not load light, and waits until every
   client-mode diagram that is laid out holds its drawing (the renderer's own
   `data-processed` marker and its `<svg>`). It then prints with `page.pdf({ tagged: true, outline: true,
   preferCSSPageSize: true })`. It adds no dependency: `playwright` is an
