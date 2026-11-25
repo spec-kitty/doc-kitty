@@ -25,15 +25,15 @@
       "wp": null
     },
     "#402": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "Context only: cited for ADR numbering (ADR-0085 belongs to #402); this mission owes #402 no work",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
+      "title": "Operating-model templates and Role kind (ADR-0085)",
+      "verdict": "not-applicable",
       "wp": null
     },
     "#403": {
