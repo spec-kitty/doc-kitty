@@ -24,6 +24,15 @@ kitty-specs/**/canary-evidence/** linguist-generated=true
 .kittify/migrations/** -diff
 kitty-specs/**/decisions/index.json merge=spec-kitty-decision-index
 *.feature text eol=lf
+# The evidence index (#401, operator ruling Q8 on #455): the committed snapshot
+# and hub page are compared byte for byte, and their source_digest hashes the
+# classified pages' bytes (ADR-0087 D2), so each stays LF on every checkout.
+# A page classified with tom_classification is added here; a test checks it.
+example/docs/_meta/tom-annex.snapshot.json text eol=lf
+example/docs/context/evidence-index/index.md text eol=lf
+example/docs/_meta/measures.yaml text eol=lf
+example/docs/architecture/audit-logging.md text eol=lf
+example/docs/context/incident-handling.md text eol=lf
 # The vendored charter packs contract is pinned byte for byte by its
 # contract.lock.json (#330), and the pack fixtures hold CRLF on purpose.
 src/lib/packs/contract/** -text
