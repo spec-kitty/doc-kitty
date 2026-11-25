@@ -1,9 +1,9 @@
 /**
  * When a print fails and closing the browser then fails too, `printPdfs` must report
- * the print failure, not the close failure: the close error would hide the cause
- * (confirm review of #462, NIT).
+ * the print failure, not the close failure: the close error would hide the cause. The
+ * close failure still goes to stderr (confirm review of #462, NIT).
  */
-import { afterEach, describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -33,6 +33,13 @@ describe('printPdfs when closing the browser fails', () => {
       close: async () => Promise.reject(new Error('close failed')),
     };
     const chromium = { launch: async () => browser };
-    await expect(printPdfs(options(root), { epochSeconds: 0, log: () => {}, chromium })).rejects.toThrow('print failed');
+    const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      await expect(printPdfs(options(root), { epochSeconds: 0, log: () => {}, chromium })).rejects.toThrow('print failed');
+      // The close failure is not lost: it is written to stderr.
+      expect(stderr.mock.calls.map((call) => String(call[0])).join('')).toContain('close failed');
+    } finally {
+      stderr.mockRestore();
+    }
   });
 });
