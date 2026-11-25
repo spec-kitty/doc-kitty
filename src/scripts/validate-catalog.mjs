@@ -32,6 +32,14 @@
  * except that the gate names a page from the repository root
  * (`example/docs/x.md`) and the build from the docs root (`x.md`). A malformed
  * consumer catalog is reported even when no page uses it.
+ *
+ * It also checks the root's optional sub-processor catalog,
+ * `<root>/_meta/subprocessors.yaml` (ADR-0086). This does NOT re-implement
+ * anything either: the gate calls `checkSubprocessorCatalog`, the one entry point
+ * the build integration calls too, and passes its problems through untouched, so
+ * the two report the same problems in the same words. Only the catalog's name in
+ * a message differs: the gate names it from the repository root. A root without
+ * the file adds nothing.
  */
 import { readdirSync, statSync, readFileSync, existsSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -40,6 +48,7 @@ import { pathToFileURL } from 'node:url';
 import matter from 'gray-matter';
 import { buildMeasuresIndex, classificationProblems } from '../lib/measures-core.mjs';
 import { readMeasuresCatalog } from '../lib/measures-loader.mjs';
+import { checkSubprocessorCatalog } from '../lib/subprocessors-loader.mjs';
 
 /** The two catalog collections and the field that keys each record. */
 const CATALOG_TYPES = ['biblio', 'tool'];
@@ -144,24 +153,31 @@ function resolveEntry(entry, catalog) {
 
 /**
  * Validate every catalog citation and TOM classification under `root` against
- * `root`'s catalogs. Returns how many references and classified pages it checked.
+ * `root`'s catalogs, and `root`'s sub-processor catalog. Returns how many
+ * references, classified pages and sub-processor records it checked.
  *
  * @param {string} root
  * @param {string[]} problems collects every problem
- * @returns {{ citations: number, measures: number }}
+ * @returns {{ citations: number, measures: number, subprocessors: number }}
  */
 export function validateRoot(root, problems) {
   const catalog = loadCatalog(root, problems);
   const measuresCatalog = readMeasuresCatalog(resolve(root));
   problems.push(...measuresCatalog.problems);
   const measures = buildMeasuresIndex(measuresCatalog.records);
+  const subprocessorCatalog = checkSubprocessorCatalog(
+    resolve(root),
+    relative('.', join(root, '_meta', 'subprocessors.yaml')).split('\\').join('/'),
+  );
+  problems.push(...subprocessorCatalog.problems);
+  const subprocessors = subprocessorCatalog.records.length;
 
   let files;
   try {
     files = walk(root);
   } catch (err) {
     problems.push(`cannot read docs dir "${root}": ${err.message}`);
-    return { citations: 0, measures: 0 };
+    return { citations: 0, measures: 0, subprocessors };
   }
 
   let citations = 0;
@@ -193,7 +209,7 @@ export function validateRoot(root, problems) {
       if (problem) problems.push(`${relative('.', file)}: ${problem}`);
     }
   }
-  return { citations, measures: classified };
+  return { citations, measures: classified, subprocessors };
 }
 
 /** CLI entry point: validate each given root (default `docs` + `example/docs`). */
@@ -204,10 +220,12 @@ export function run(argv) {
   const problems = [];
   let total = 0;
   let classifiedTotal = 0;
+  let subprocessorTotal = 0;
   for (const root of roots) {
-    const { citations, measures } = validateRoot(root, problems);
+    const { citations, measures, subprocessors } = validateRoot(root, problems);
     total += citations;
     classifiedTotal += measures;
+    subprocessorTotal += subprocessors;
   }
 
   if (problems.length) {
@@ -216,7 +234,7 @@ export function run(argv) {
     process.exit(1);
   }
   console.log(
-    `✓ ${total} external reference(s) and ${classifiedTotal} TOM classification(s) resolve across ${roots.length} root(s): ${roots.join(', ')}.`,
+    `✓ ${total} external reference(s), ${classifiedTotal} TOM classification(s) and ${subprocessorTotal} sub-processor record(s) resolve across ${roots.length} root(s): ${roots.join(', ')}.`,
   );
 }
 

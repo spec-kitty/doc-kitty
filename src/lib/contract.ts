@@ -147,6 +147,10 @@ export interface IndexLinks {
   rss?: AgentLink;
   bibliography?: AgentLink;
   scenarios?: AgentLink;
+  /** Present only when the site has a sub-processor catalog (ADR-0086): `api/subprocessors.json`. */
+  subprocessors?: AgentLink;
+  /** Present only when the site has a sub-processor catalog (ADR-0086): the `subprocessors.xml` change feed. */
+  subprocessorFeed?: AgentLink;
   /** Present only when the site opts in with `links.mcp` (FR-009). */
   mcp?: McpWiringPointer;
 }

@@ -1,0 +1,13 @@
+# Fictional fixture: a lower-case country code and a duplicate id.
+- id: acme-hosting
+  name: Acme Hosting B.V.
+  processing: Hosting.
+  location: [nl]
+  responsibilities: Acme operates the infrastructure.
+  since: 2025-01-15
+- id: acme-hosting
+  name: Acme Hosting again
+  processing: Hosting.
+  location: [NL]
+  responsibilities: Acme operates the infrastructure.
+  since: 2025-01-15

@@ -171,6 +171,8 @@ interface DeclaredSurfaces {
   rss: boolean;
   bibliography: boolean;
   scenarios: boolean;
+  subprocessors: boolean;
+  subprocessorFeed: boolean;
   mcp: boolean;
 }
 
@@ -207,6 +209,9 @@ function indexLinks(site: URL | undefined, indexPath: string, declared: Declared
     ...(declared.rss ? { rss: { href: absolute(site, '/rss.xml') } } : {}),
     ...(declared.bibliography ? { bibliography: { href: absolute(site, '/api/bibliography.json') } } : {}),
     ...(declared.scenarios ? { scenarios: { href: absolute(site, '/api/scenarios.json') } } : {}),
+    // ADR-0086: served only when the site has a sub-processor catalog.
+    ...(declared.subprocessors ? { subprocessors: { href: absolute(site, '/api/subprocessors.json') } } : {}),
+    ...(declared.subprocessorFeed ? { subprocessorFeed: { href: absolute(site, '/subprocessors.xml') } } : {}),
     // FR-009: the opt-in MCP wiring pointer. #307: the package is not
     // published (#408), so `href` points at the build-from-source steps
     // rather than an `npm:` name nothing can install, and `title` says so.
@@ -237,6 +242,10 @@ export function agentIndexRoute(options: AgentIndexRouteOptions): APIRoute {
       rss: surfaces?.rss ?? true,
       bibliography: surfaces?.bibliography ?? true,
       scenarios: surfaces?.scenarios ?? true,
+      // Unlike the surfaces above, no catalog means no route, so an index built
+      // without detection does not link them.
+      subprocessors: surfaces?.subprocessors ?? false,
+      subprocessorFeed: surfaces?.subprocessorFeed ?? false,
       mcp: false,
       ...options.links,
     };

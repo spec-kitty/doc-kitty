@@ -94,7 +94,7 @@ const KEYS = {
   } satisfies Record<keyof AgentRecordEntry, true>,
   IndexLinks: {
     self: true, llms: true, sitemap: true, contentGraph: true, rss: true, bibliography: true,
-    scenarios: true, mcp: true,
+    scenarios: true, subprocessors: true, subprocessorFeed: true, mcp: true,
   } satisfies Record<keyof IndexLinks, true>,
   AgentIndex: {
     title: true, version: true, count: true, buildId: true, generatedFrom: true, sections: true,
@@ -146,7 +146,8 @@ const CHILDREN: { [R in RecordName]?: Record<string, RecordName> } = {
   AgentRecordLinks: { self: 'AgentLink', html: 'AgentLink', related: 'AgentTitledLink' },
   IndexLinks: {
     self: 'AgentLink', llms: 'AgentLink', sitemap: 'AgentLink', contentGraph: 'AgentLink', rss: 'AgentLink',
-    bibliography: 'AgentLink', scenarios: 'AgentLink', mcp: 'McpWiringPointer',
+    bibliography: 'AgentLink', scenarios: 'AgentLink', subprocessors: 'AgentLink', subprocessorFeed: 'AgentLink',
+    mcp: 'McpWiringPointer',
   },
   AgentIndex: { sections: 'SectionRecord', pages: 'AgentRecordEntry', _links: 'IndexLinks' },
   AgentPageLinks: { self: 'AgentLink', up: 'AgentLink', html: 'AgentLink', related: 'AgentTitledLink', describedby: 'AgentLink' },

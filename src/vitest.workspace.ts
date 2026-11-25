@@ -82,6 +82,9 @@ const BUILD_SUITES = [
   'tests/sidebar-icons-build.test.ts',
   'tests/page-atom-build.test.ts',
   'tests/footer-links-build.test.ts',
+  // Sub-processor catalog (ADR-0086): builds the chrome fixture without and with
+  // a catalog, and with an invalid one. Real Astro runs, so serialized here.
+  'tests/subprocessors-build.test.ts',
   // MCP served-site conformance lane (doc-kitty-mcp-server WP08, FR-001
   // anti-fake): builds example/ once into its own DK_OUTDIR
   // (dist-wp08-mcp-lane), serves that fresh build statically over 127.0.0.1, spawns the freshly `tsc`-built

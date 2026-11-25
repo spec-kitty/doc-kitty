@@ -160,7 +160,7 @@ export const SCENARIO_INDEX_MODULE_ID = 'virtual:doc-kitty/gherkin-scenario-inde
 const SCENARIO_INDEX_ENTRYPOINT = '@spec-kitty/doc-toolkit/routes/scenario-index-injected';
 
 /** Page extensions Astro treats as an endpoint file. */
-const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs', 'tsx', 'jsx'];
+export const ENDPOINT_EXTENSIONS = ['ts', 'js', 'mts', 'mjs', 'cts', 'cjs', 'tsx', 'jsx'];
 
 /**
  * True when the site mounts its own `api/scenarios.json` endpoint under

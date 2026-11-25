@@ -33,6 +33,8 @@ const NONE: ServedSurfaces = {
   okf: true,
   pageAtom: false,
   openapi: false,
+  subprocessors: false,
+  subprocessorFeed: false,
 };
 
 describe('detectServedSurfaces', () => {
@@ -45,6 +47,8 @@ describe('detectServedSurfaces', () => {
     ['scenarios', '/api/scenarios.json'],
     ['contentGraph', '/api/content-graph.json'],
     ['pageAtom', '/api/pages/[...slug].atom.xml'],
+    ['subprocessors', '/api/subprocessors.json'],
+    ['subprocessorFeed', '/subprocessors.xml'],
   ])('%s is true only with %s', (surface, pattern) => {
     expect(detectServedSurfaces([pattern], false)).toEqual({ ...NONE, [surface]: true });
     expect(detectServedSurfaces(['/other', '/[...slug]'], false)[surface as keyof ServedSurfaces]).toBe(false);
@@ -64,6 +68,8 @@ describe('detectServedSurfaces', () => {
       okf: true,
       pageAtom: false,
       openapi: false,
+      subprocessors: false,
+      subprocessorFeed: false,
     });
   });
 
@@ -179,6 +185,23 @@ describe('agentIndexRoute reads the detection result', () => {
     const index = await fetchIndex(agentIndexRoute({ title: 'Docs' }));
     for (const name of LINKED) expect(index._links).toHaveProperty(name);
     for (const record of index.pages) expect(record._links).toHaveProperty('self');
+  });
+
+  it('links the sub-processor surfaces only when served, and not when detection has not run (ADR-0086)', async () => {
+    process.env[DK_SERVED_SURFACES_ENV] = JSON.stringify(WITHOUT_ANY);
+    const none = (await fetchIndex(agentIndexRoute({ title: 'Docs' })))._links;
+    expect(none).not.toHaveProperty('subprocessors');
+    expect(none).not.toHaveProperty('subprocessorFeed');
+    process.env[DK_SERVED_SURFACES_ENV] = JSON.stringify({ ...WITHOUT_ANY, subprocessors: true, subprocessorFeed: true });
+    const both = (await fetchIndex(agentIndexRoute({ title: 'Docs' })))._links;
+    expect(both).toMatchObject({
+      subprocessors: { href: 'https://docs.example/api/subprocessors.json' },
+      subprocessorFeed: { href: 'https://docs.example/subprocessors.xml' },
+    });
+    delete process.env[DK_SERVED_SURFACES_ENV];
+    const undetected = (await fetchIndex(agentIndexRoute({ title: 'Docs' })))._links;
+    expect(undetected).not.toHaveProperty('subprocessors');
+    expect(undetected).not.toHaveProperty('subprocessorFeed');
   });
 
   it('an explicit links value wins, in both directions', async () => {
