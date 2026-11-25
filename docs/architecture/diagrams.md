@@ -154,15 +154,17 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
   - *Font.* Mermaid sizes each HTML label's box when it renders the diagram.
     Each build-rendered Mermaid SVG carries a rule that draws its HTML labels in
     the font they were measured in: `Arial, Helvetica, "Liberation Sans",
-    Arimo`, all with Arial's widths. So a site font cannot widen a label past its
-    box, unless the reader's device has none of these fonts and falls back to a
-    wider sans font. Labels drawn as SVG text, such as sequence diagram labels,
-    keep Mermaid's own sizing.
-  - *Author font.* A diagram-wide font, whether the site's or one set in an
-    `%%{init}%%` directive, does not reach the labels: a fit the toolkit can
-    guarantee wins over the author's choice. A font set on one node with
+    Arimo`, all with Arial's widths. The exception is a diagram with an
+    `%%{init}%%` font, which sets the measurement (see *Author font*). So a site
+    font cannot widen a label past its box, unless the reader's device has none
+    of these fonts and falls back to a wider sans font. Labels drawn as SVG
+    text, such as sequence diagram labels, keep Mermaid's own sizing.
+  - *Author font.* The site's font does not reach the labels. A font set in an
+    `%%{init}%%` directive is not shown either, but Mermaid still measures the
+    labels in it. If that font is narrower than Arial on the build machine, as a
+    serif font is, a label can overflow its box. A font set on one node with
     `classDef` or `style` is kept, because Mermaid's rule for it is more specific
-    than the toolkit's. Such a label can still overflow its box when the font it
+    than the toolkit's. Such a label can also overflow its box when the font it
     is shown in is wider than the one it was measured in. Author fonts are
     tracked in [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
   - *Author fills.* A fill the author sets does not follow the theme. A label on
@@ -176,7 +178,8 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
     label colour set in an `%%{init}%%` directive, such as `nodeTextColor`, is not
     treated as the author's: it replaces a token outright.
   - *Author edges.* A flowchart edge colour the author sets, with an
-    `%%{init}%%` `lineColor` or a `linkStyle`, does not follow the theme either, so a dark one
+    `%%{init}%%` `lineColor` or a `linkStyle`, does not follow the theme
+    either, so a dark one
     vanishes on the dark page and a pale one on the light page. A mid-grey one
     fades on whichever surface is nearest it in brightness. Each edge and its
     arrowhead keep the author's colour in a theme where it clears 3:1 against
