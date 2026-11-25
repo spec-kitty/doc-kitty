@@ -37,16 +37,16 @@
       "wp": null
     },
     "#403": {
-      "evidence_ref": "<link or commit>",
+      "evidence_ref": "WP02 core+loader on lane-a fa8f569a (FR-001..FR-007); WP03-WP07 outstanding",
       "fr": null,
       "nfr": null,
       "repo": null,
       "sc": null,
       "scope": null,
       "source_file": "spec.md",
-      "title": "<fill at WP-implementation time>",
-      "verdict": "unknown",
-      "wp": null
+      "title": "Sub-processor catalog",
+      "verdict": "in-mission",
+      "wp": "WP02"
     },
     "#445": {
       "evidence_ref": "<auto-classified: no action required>",
