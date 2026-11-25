@@ -18,10 +18,12 @@ agent_profile: curator-carla
 authoritative_surface: docs/
 create_intent:
 - docs/changelog/unreleased/369-diagram-label-legibility.md
+- docs/changelog/unreleased/370-diagram-label-font.md
 execution_mode: planning_artifact
 owned_files:
 - docs/architecture/diagrams.md
 - docs/changelog/unreleased/369-diagram-label-legibility.md
+- docs/changelog/unreleased/370-diagram-label-font.md
 role: implementer
 tags: []
 tracker_refs:

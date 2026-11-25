@@ -156,17 +156,21 @@ alongside the client render described above ([ADR-0040](../adr/0040-build-time-d
     `Arial, Helvetica, "Liberation Sans", Arimo`, all with Arial's widths. So a
     site font cannot widen a label past its box, unless the reader's device has
     none of these fonts and falls back to a wider sans font. Labels drawn as SVG
-    text, such as sequence diagram labels, keep Mermaid's own sizing.
+    text, such as sequence diagram labels, keep Mermaid's own sizing; Mermaid
+    draws them in the same stack.
   - *Author font.* The site's font does not reach the labels. A `fontFamily` set
     in an `%%{init}%%` directive or front-matter `config`, including
     `themeVariables.fontFamily`, is neither shown nor used for measurement: the
     build drops it, and keeps every other directive value. The sequence diagram
-    font keys (`actorFontFamily`, `noteFontFamily`, `messageFontFamily`) are not
-    dropped yet; see [#458](https://github.com/spec-kitty/doc-kitty/issues/458).
+    font keys (`actorFontFamily`, `noteFontFamily`, `messageFontFamily`) have no
+    effect either: Mermaid 11.17.1 replaces them with the top-level `fontFamily`.
+    Dropping them too, in case a later Mermaid honours them, is
+    [#458](https://github.com/spec-kitty/doc-kitty/issues/458).
     Fonts set in author CSS are kept: on one node with `classDef` or `style`, or
     in an `%%{init}%%` `themeCSS` rule. Such a label can be measured in one font
-    and shown in another, and then overflow its box: a serif `themeCSS` font
-    clips a long label by about 9 px. Author fonts are tracked in
+    and shown in another, and then overflow its box. With a serif `themeCSS`
+    font the clipped part grows with the label, to about a tenth of its width,
+    until Mermaid wraps the label. Author fonts are tracked in
     [#412](https://github.com/spec-kitty/doc-kitty/issues/412).
   - *Author fills.* A fill the author sets does not follow the theme. A label on
     an opaque author fill is black or white, whichever contrasts more with it.
