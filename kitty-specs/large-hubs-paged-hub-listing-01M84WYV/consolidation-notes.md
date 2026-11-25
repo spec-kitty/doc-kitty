@@ -83,9 +83,22 @@ hand-off.
   brief applies: keep `Co-Authored-By: Claude <noreply@anthropic.com>` and
   `Claude-Session`; strip only trailers that name a model.
 
-## Held for the operator
+## MANDATORY at R24: fold the Q9 locale-alternates code
 
-- Locales with different page counts: a listing page's hreflang alternates and
+The operator's ruling of 2026-11-25 (recorded on #342, comment 7155320882): on a
+listing page, hreflang links and language-picker options name only built locale
+listing pages. The code is on `wip/342-locale-alternates` @ cd1a080f, based on
+lane-f 28ff2c81, and is reviewed in WP07 cycle 2 (option B: WP07 carries the
+docs only, so no lane history is merged into the target before consolidate).
+At R24, bring cd1a080f onto the clean branch with its review evidence:
+`src/lib/listing-alternates.ts`, the `astro:build:done` rewrite in
+`src/lib/integrations/route-shaping.ts`, `src/tests/listing-alternates.test.ts`
+and the two locale tests in `src/tests/paged-hub-build.test.ts`.
+
+## Held for the operator (resolved)
+
+- RESOLVED 2026-11-25, drop the missing alternates (see the MANDATORY item above).
+  Locales with different page counts: a listing page's hreflang alternates and
   the language picker point at listing pages that were never built (for example,
   `missions/page/4` links to `fr/missions/page/4`). The dispatcher asked the
   operator whether to build fallback listing pages or suppress those alternates.
