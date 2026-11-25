@@ -6,14 +6,27 @@
  *   proves it then calls no Astro hook at all).
  * - With one, it serves exactly the two new files, links them from the agent
  *   index, and changes no other file by a single byte (U1): the catalog only adds.
- * - The API document serves the loader's checked records and changes. Its exact
- *   bytes are pinned on the renderer (subprocessors-render.test.ts).
+ * - Both served files are byte-for-byte what the WP04 renderers produce from the
+ *   loader's checked catalog, so a route that added anything (a build time, say)
+ *   fails here. A genuine second build (a distinct cache key, so not a reuse)
+ *   serves the same bytes again (FR-013, NFR-001). Two builds cannot be days
+ *   apart; subprocessors-render.test.ts covers that with fake clocks years apart
+ *   and a second time zone.
+ *
+ * Real builds: the stock site, the site with a catalog, and its rebuild. The
+ * invalid-catalog request stops at `astro:config:setup`, before any page renders.
  */
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { buildChromeFixture } from './fixtures/chrome/harness.mjs';
 import { checkSubprocessorCatalog } from '../lib/subprocessors-loader.mjs';
+
+// The renderers reach `routes/shared.ts`, which imports `astro:content`; they never call it.
+vi.mock('astro:content', () => ({ getCollection: async () => [] }));
+const { renderSubprocessorsApi, renderSubprocessorsFeed } = await import('../lib/subprocessors-render.js');
+
+afterEach(() => vi.unstubAllEnvs());
 
 const BUILD_TIMEOUT = 240_000;
 
@@ -55,9 +68,15 @@ function filesUnder(dir: string): string[] {
  * Mask what differs between ANY two fresh fixture builds, catalog or not. Each
  * request builds in its own root, where the glossary producer regenerates its page
  * during the build and stamps `generated.at` with the clock (ADR-0087 D5: the tree
- * is not regeneration-clean). That `at` reappears as a feed `pubDate`, and the
- * `buildId` hashes it. Only these are masked: an ISO instant, an RFC 822 date and
- * the build id. Any other byte difference still fails.
+ * is not regeneration-clean). That one instant reaches these places today:
+ * - as an ISO instant: `generated.at` in the per-page JSON and the content graph,
+ *   `at:` in the OKF `_index.meta.yaml` files, and (with milliseconds) the Atom
+ *   `<updated>` of the glossary's page feeds;
+ * - as an RFC 822 date: the glossary items' `<pubDate>` in `rss.xml`;
+ * - through the 64-hex `buildId`, which hashes it.
+ * The patterns are file-wide, so they would also hide a NEW clock-derived value
+ * in a stock file; the sub-processor files themselves are never masked, and the
+ * byte-identity test below compares them unmasked.
  */
 function masked(text: string): string {
   return text
@@ -66,8 +85,8 @@ function masked(text: string): string {
     .replace(/("?buildId"?: ?"?)[0-9a-f]{64}/g, '$1<buildId>');
 }
 
-function built(files: Record<string, string> = {}) {
-  const build = buildChromeFixture({ files });
+function built(files: Record<string, string> = {}, env: Record<string, string> = {}) {
+  const build = buildChromeFixture({ files, env });
   expect(build.status, build.output).toBe(0);
   return {
     dist: build.dist,
@@ -116,22 +135,31 @@ describe('the sub-processor catalog in a built site', () => {
   );
 
   it(
-    'serves the checked catalog: resolved records, every change, and the feed',
+    "serves exactly the renderers' bytes, and the same bytes from a genuine rebuild",
     () => {
       const withCatalog = built(WITH_CATALOG);
       const checked = checkSubprocessorCatalog(path.join(withCatalog.root, 'docs'));
       expect(checked.problems).toEqual([]);
-      const doc = JSON.parse(withCatalog.text('api/subprocessors.json'));
-      expect(doc.count).toBe(3);
-      expect(doc.records).toEqual(checked.normalised);
-      expect(doc.changes).toEqual(checked.changes);
-      expect(doc._links.feed).toEqual(withCatalog.links().subprocessorFeed);
-      const feed = withCatalog.text('subprocessors.xml');
-      expect(feed).toContain('<title>Chrome fixture: sub-processor changes</title>');
-      expect([...feed.matchAll(/<item>/g)]).toHaveLength(4);
-      expect(feed).not.toContain('lastBuildDate');
+      expect(checked.records).toHaveLength(3);
+
+      // The site and base the build served under, read back from its own link.
+      const self = new URL(JSON.parse(withCatalog.text('api/subprocessors.json'))._links.self.href);
+      const base = self.pathname.replace(/api\/subprocessors\.json$/, '');
+      vi.stubEnv('BASE_URL', base);
+      const site = new URL('/', self);
+      const input = { records: checked.normalised, changes: checked.changes };
+      expect(withCatalog.text('api/subprocessors.json')).toBe(renderSubprocessorsApi(input, { site }));
+      expect(withCatalog.text('subprocessors.xml')).toBe(
+        renderSubprocessorsFeed(input, { site, siteTitle: 'Chrome fixture' }),
+      );
+
+      // A distinct env key is a distinct cache key: a real second build, not a reuse.
+      const rebuilt = built(WITH_CATALOG, { DK_TEST_SUBPROCESSORS_REBUILD: '1' });
+      expect(rebuilt.dist).not.toBe(withCatalog.dist);
+      expect(rebuilt.text('api/subprocessors.json')).toBe(withCatalog.text('api/subprocessors.json'));
+      expect(rebuilt.text('subprocessors.xml')).toBe(withCatalog.text('subprocessors.xml'));
     },
-    BUILD_TIMEOUT,
+    BUILD_TIMEOUT * 2,
   );
 
   it(
