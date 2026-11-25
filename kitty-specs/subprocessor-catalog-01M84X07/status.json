@@ -158,7 +158,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Integration, routes, index links; parity over 12 catalogs; fixture build proves additive-only output; full pnpm test green",
-        "Review cycle 1: F1 byte equality vs renderers + genuine rebuild; F2 mask comment; full pnpm test green"
+        "Review cycle 1: F1 byte equality vs renderers + genuine rebuild; F2 mask comment; full pnpm test green",
+        "Review passed (cycle 2): F1 resolved. subprocessors-build.test.ts asserts unmasked byte equality of api/subprocessors.json and subprocessors.xml against renderSubprocessorsApi/renderSubprocessorsFeed, plus a genuine rebuild (distinct env cache key, separate root). Mutant M7 (builtAt in subprocessors-api-injected.ts) now fails on real rebuilds: src/lib is in sourceFingerprint, so the cache invalidated. It is killed by the byte assertion, and independently by the rebuild assertion (11:06:10 vs 11:06:23). File restored. 3 real builds (stock, catalog, rebuild), plus the early-exit invalid build. Only the test file changed outside kitty-specs status bookkeeping. Build tier 254/254 (23 files); targeted 123/123; typecheck and eslint clean. F2 addressed. Nit, non-blocking: site/base are read back from the served self link rather than pinned to fixture constants."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
