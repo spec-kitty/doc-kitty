@@ -23,7 +23,7 @@
 const LISTING_ROUTE = /(?:^|\/)page\/([1-9]\d*)$/;
 const HREFLANG_LINK = /<link rel="alternate" hreflang="[^"]*" href="([^"]*)"\s*\/?>\n?/g;
 const LANG_SELECT = /<starlight-lang-select>[\s\S]*?<\/starlight-lang-select>/g;
-const PICKER_OPTION = /<option value="([^"]*)"[^>]*>[^<]*<\/option>/g;
+const PICKER_OPTION = /<option value="([^"]*)"[^>]*>[\s\S]*?<\/option>/g;
 
 /** The route of `href` (absolute, or a root-relative path) under `base`, or null outside it. */
 function routeOf(href: string, base: string): string | null {
@@ -38,7 +38,27 @@ function routeOf(href: string, base: string): string | null {
     if (pathname !== prefix && !pathname.startsWith(`${prefix}/`)) return null;
     pathname = pathname.slice(prefix.length);
   }
-  return pathname.replace(/^\/+|\/+$/g, '');
+  return normalizeRoute(pathname);
+}
+
+/** A decoded pathname as a route: no leading or trailing slash, no `.html` (`build.format: 'file'`). */
+function normalizeRoute(pathname: string): string {
+  return pathname.replace(/^\/+|\/+$/g, '').replace(/(?:^|\/)index\.html$|\.html$/, '');
+}
+
+/**
+ * One of Astro's built pathnames (`astro:build:done` `pages[].pathname`) as a
+ * route, comparable with the alternates' targets: decoded, then normalized as they
+ * are (`fr/missions/page/4.html` → `fr/missions/page/4`).
+ */
+export function builtRoute(pathname: string): string {
+  let decoded = pathname;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    // A malformed escape stays as written; it then matches no alternate.
+  }
+  return normalizeRoute(decoded);
 }
 
 /** Whether `route` is a listing page route (`…/page/<n>`, n ≥ 2). */

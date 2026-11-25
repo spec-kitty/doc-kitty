@@ -12,7 +12,9 @@ section: Added
   children) and `llms.txt`, each once; the RSS and Atom feeds leave them out. On
   a translated site each locale pages to its own depth, and a listing page's
   `hreflang` links and language picker name only the listing pages that are
-  built. A hub that is not paged, and a site with
+  built. Paging is on by default: after upgrading, a hub with more pages than
+  its cap and its page size (both 50 by default) is paged; raise either to keep
+  it on one page. A hub that is not paged, and a site with
   no paged hub, builds exactly as before. The route-shaping hub data now covers
   every hub, also on sites with their own sidebar; `HubCap` gained the optional
   `capped` and `pageSize` fields, and `cappedHubCaps` filters the capped ones. A

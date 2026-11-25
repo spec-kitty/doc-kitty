@@ -93,6 +93,18 @@ describe('dropUnbuiltListingAlternates', () => {
     expect(dropUnbuiltListingAlternates(encoded, BASE, new Set())).toBe('');
   });
 
+  it('handles build.format "file" hrefs (squad: page/4.html)', () => {
+    const html = `<link rel="alternate" hreflang="fr" href="https://example.test${BASE}/fr/missions/page/4.html"/>`;
+    expect(dropUnbuiltListingAlternates(html, BASE, built)).toBe('');
+    const kept = `<link rel="alternate" hreflang="fr" href="https://example.test${BASE}/fr/missions/page/3.html"/>`;
+    expect(dropUnbuiltListingAlternates(kept, BASE, built)).toBe(kept);
+  });
+
+  it('drops a picker option whose label holds markup (squad: Select renders set:html)', () => {
+    const html = `<starlight-lang-select><select><option value="${BASE}/fr/missions/page/4/"><b>Français</b></option></select></starlight-lang-select>`;
+    expect(dropUnbuiltListingAlternates(html, BASE, built)).not.toContain('page/4');
+  });
+
   it('works with no base', () => {
     const html = `<link rel="alternate" hreflang="fr" href="https://example.test/fr/missions/page/4/"/>`;
     expect(dropUnbuiltListingAlternates(html, '', built)).toBe('');

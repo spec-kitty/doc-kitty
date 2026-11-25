@@ -303,6 +303,16 @@ describe('pagination UI strings (#342, FR-009)', () => {
     expect(resolveHubString(HUB_PAGINATION_KEYS.page, { page: 3 }, translate({ [HUB_PAGINATION_KEYS.page]: 'Seite {page}' }))).toBe('Seite 3');
     expect(resolveHubString(HUB_PAGINATION_KEYS.next, {}, () => '')).toBe('Next');
   });
+
+  it('falls back to English when a translation drops a placeholder (squad: WCAG 2.5.3, 2.4.2)', () => {
+    // A page label without {page} would give every page link one name and every
+    // listing page one title; the English template keeps the number.
+    const t = (strings: Record<string, string>) => (key: string) => strings[key] ?? key;
+    expect(resolveHubString(HUB_PAGINATION_KEYS.page, { page: 3 }, t({ [HUB_PAGINATION_KEYS.page]: 'Ga naar pagina' }))).toBe('Page 3');
+    expect(resolveHubString(HUB_PAGINATION_KEYS.title, { title: 'M', page: 2 }, t({ [HUB_PAGINATION_KEYS.title]: '{title}' }))).toBe('M, page 2');
+    expect(resolveHubString(HUB_PAGINATION_KEYS.title, { title: 'M', page: 2 }, t({ [HUB_PAGINATION_KEYS.title]: 'p. {page} — {title}' }))).toBe('p. 2 — M');
+    expect(resolveHubString(HUB_PAGINATION_KEYS.next, {}, t({ [HUB_PAGINATION_KEYS.next]: 'Volgende' }))).toBe('Volgende');
+  });
 });
 
 /*

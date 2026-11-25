@@ -235,8 +235,17 @@ export function resolveHubString(
   translate?: (key: string) => unknown,
 ): string {
   const translated = translate?.(key);
-  const template =
-    typeof translated === 'string' && translated !== '' && translated !== key ? translated : HUB_PAGINATION_STRINGS[key];
+  const english = HUB_PAGINATION_STRINGS[key];
+  // A translation must keep every placeholder of the English template: a page
+  // label without `{page}` would give every page link one accessible name and
+  // every listing page one title (WCAG 2.5.3, 2.4.2), so it falls back to English.
+  const placeholders = english.match(/\{\w+\}/g) ?? [];
+  const usable =
+    typeof translated === 'string' &&
+    translated !== '' &&
+    translated !== key &&
+    placeholders.every((placeholder) => translated.includes(placeholder));
+  const template = usable ? translated : english;
   return template.replace(/\{(\w+)\}/g, (whole, name: string) => (Object.hasOwn(vars, name) ? String(vars[name]) : whole));
 }
 

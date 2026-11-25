@@ -8,8 +8,9 @@
  * ("Pagination"): Pagefind skips `<nav>`, so the page numbers stay out of the
  * search index while the cards above stay in it. The current page is text with
  * `aria-current="page"` (its "Page" prefix visually hidden), never a link to
- * itself; a Previous or Next with nowhere to go is plain muted text, no link and
- * no ARIA (a generic element may not carry `aria-label` or `aria-disabled`).
+ * itself; a Previous or Next with nowhere to go is plain muted text, no link,
+ * and its list item is `aria-hidden` so a screen reader neither reads it nor
+ * counts it (a generic element may not carry `aria-label` or `aria-disabled`).
  * Targets are at least 24×24 px.
  *
  * The styles are an inline `<style>` emitted with the nav, not part of the shared
@@ -18,7 +19,7 @@
  * strict `Content-Security-Policy` needs one constant `style-src` hash for it.
  */
 import { HUB_PAGINATION_KEYS, pagedHubSlug, resolveHubString } from '../../lib/child-cap.js';
-import { pageLabelPrefix, paginationItems } from '../../lib/hub-pagination.js';
+import { pageLabelPrefix, pageLabelSuffix, paginationItems } from '../../lib/hub-pagination.js';
 
 interface Props {
   /** The hub folder slug (`missions`). */
@@ -36,9 +37,11 @@ const { hub, current, total, hrefFor, translate } = Astro.props;
 const t = (key: (typeof HUB_PAGINATION_KEYS)[keyof typeof HUB_PAGINATION_KEYS], vars: Record<string, string | number> = {}) =>
   resolveHubString(key, vars, translate);
 const href = (page: number) => hrefFor(pagedHubSlug(hub, page));
-// The visually hidden words before the current page's number (`sr-only` is
-// Starlight's global utility): "Page 3" reads as "Page " + "3".
+// The visually hidden words around the current page's number (`sr-only` is
+// Starlight's global utility): "Page 3" reads as "Page " + "3", and "第3页" as
+// "第" + "3" + "页".
 const pagePrefix = (page: number) => pageLabelPrefix(t(HUB_PAGINATION_KEYS.page, { page }), page);
+const pageSuffix = (page: number) => pageLabelSuffix(t(HUB_PAGINATION_KEYS.page, { page }), page);
 const items = total > 1 ? paginationItems(current, total) : [];
 ---
 
@@ -46,7 +49,7 @@ const items = total > 1 ? paginationItems(current, total) : [];
   items.length > 0 && (
     <nav class="dk-hub-pagination" aria-label={t(HUB_PAGINATION_KEYS.label)}>
       <ul class="dk-hub-pagination__list" role="list">
-        <li>
+        <li aria-hidden={current > 1 ? undefined : 'true'}>
           {current > 1 ? (
             <a class="dk-hub-pagination__link dk-hub-pagination__step" href={href(current - 1)} rel="prev">{t(HUB_PAGINATION_KEYS.previous)}</a>
           ) : (
@@ -57,12 +60,12 @@ const items = total > 1 ? paginationItems(current, total) : [];
           item.type === 'gap' ? (
             <li><span class="dk-hub-pagination__gap" aria-hidden="true">…</span></li>
           ) : item.current ? (
-            <li><span class="dk-hub-pagination__current" aria-current="page"><span class="sr-only">{pagePrefix(item.page)}</span>{item.page}</span></li>
+            <li><span class="dk-hub-pagination__current" aria-current="page"><span class="sr-only">{pagePrefix(item.page)}</span>{item.page}{pageSuffix(item.page) && <span class="sr-only">{pageSuffix(item.page)}</span>}</span></li>
           ) : (
             <li><a class="dk-hub-pagination__link" href={href(item.page)} aria-label={t(HUB_PAGINATION_KEYS.page, { page: item.page })}>{item.page}</a></li>
           ),
         )}
-        <li>
+        <li aria-hidden={current < total ? undefined : 'true'}>
           {current < total ? (
             <a class="dk-hub-pagination__link dk-hub-pagination__step" href={href(current + 1)} rel="next">{t(HUB_PAGINATION_KEYS.next)}</a>
           ) : (

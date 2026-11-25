@@ -103,3 +103,35 @@ and the two locale tests in `src/tests/paged-hub-build.test.ts`.
   `missions/page/4` links to `fr/missions/page/4`). The dispatcher asked the
   operator whether to build fallback listing pages or suppress those alternates.
   Do not change until the operator rules.
+
+## R24 pre-merge adversarial squad (2026-11-25)
+
+Point-cut: pre-merge, on `feat/342-paged-hub-listing-r24`. Question: is the change
+correct, complete and safe to land, with no unpaged-site regression, fakeable test
+or doc/code drift? Lenses, profile-loaded and read-only: reviewer-renata
+(correctness and tests), architect-alphonso (architecture and spec fidelity),
+frontend-freddy (frontend, accessibility, built markup). All three: SHIP WITH FIXES,
+no blocker. Two divergences were adjudicated from the source: `build.format:
+'file'` (Starlight's `localizedUrl` keeps `.html`, so the rewrite missed it: fixed)
+and the order check (`assertListingAgrees` compares membership only: see R3).
+
+| Finding | Disposition | Evidence |
+| --- | --- | --- |
+| F1 A translation without `{page}` gives every page link one name and every listing page one title | accepted | `resolveHubString` falls back to English when a placeholder is dropped; `child-cap.test.ts` |
+| F2/R2 Words after the page number are lost for screen readers | accepted | `pageLabelSuffix`, rendered `sr-only` after the number; `hub-pagination.test.ts` |
+| F3 An unavailable Previous/Next is announced | accepted | its `<li>` is `aria-hidden` (`HubPagination.astro`) |
+| F4 Page 1 and listing pages have different footers | changed | documented in the guide, "The listing pages" |
+| F5 Two `aria-current` on a listing page (sidebar entry and page number) | deferred_with_rationale | the capped hub's "N pages" entry is current on every page of the hub by design (FR-010), as slice 1 does for its children |
+| F6 A picker label with markup escapes the rewrite | accepted | `PICKER_OPTION` matches any label; `listing-alternates.test.ts` |
+| F7 The pagination gap is never rendered in a browser test | deferred_with_rationale | `paginationItems` is unit-tested at 8 and 9 pages; the example keeps 4 pages so its build stays small |
+| R1 `build.format: 'file'` hrefs (`page/4.html`) escape the rewrite | accepted | `normalizeRoute` drops `.html`; `listing-alternates.test.ts` |
+| R3 `assertListingAgrees` does not check order | deferred_with_rationale | on a paged hub every surface takes its order from the hub data, so they cannot disagree; a strict check against the unpaged composition would fail sites whose loader derives a title. The doc comment now says membership and count |
+| R4 `new Map(readHubData())` is last-wins, `hubListingPages` first-wins | deferred_with_rationale | the one producer (`hubData`) lists each hub once |
+| R5 Built pathnames are not decoded | accepted | `builtRoute` decodes them; route-shaping `astro:build:done` uses it |
+| A1 Listing pages are styled only through the Hub layout | changed | the route imports `hub.css`; `kind: Hub` kept on purpose, recorded in ADR-0089 decision 4 |
+| A2 Consumer-sidebar sites cannot set a site-wide cap; paging is on by default | accepted | guide, "Sites with their own sidebar"; changelog fragment |
+| A3 `DK_HUB_DATA` documented as set at `config:done` | accepted | `internal-env.mjs` table and JSDoc |
+| A4 The paging-api contract omits exports and the `RangeError`s | accepted | `contracts/paging-api.md` |
+| A5 The plan still puts the pagination styles in `hub.css` | accepted | `plan.md`, Amendments |
+| A6 `openApiStampConfig` rebuilds the listing per page artifact | deferred_with_rationale | string work only, no correctness effect; with item 5 (memoisation), a follow-up |
+| A7 The example's artifact gate does not run the alternates check | deferred_with_rationale | the example is monolingual, so the check would pass vacuously; `paged-hub-build.test.ts` runs it on a real two-locale build |

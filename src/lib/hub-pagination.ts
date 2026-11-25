@@ -31,10 +31,12 @@ export function listingCards(slugs: readonly string[], cardsBySlug: ReadonlyMap<
 
 /**
  * Check that a paged hub's page and the build's hub data list the same children
- * (C-001, both ways): the listing pages slice the hub data, so a card the hub page
- * composes from the collection but the hub data lacks would be silently dropped,
- * and a hub-data child with no card would have nothing to render. Throws, naming
- * the hub and the first child that differs.
+ * and count (C-001, both ways): the listing pages slice the hub data, so a card the
+ * hub page composes from the collection but the hub data lacks would be silently
+ * dropped, and a hub-data child with no card would have nothing to render. Throws,
+ * naming the hub and the first child that differs. Membership and count only: on a
+ * paged hub every surface (page 1, the listing pages, the agent API, `llms.txt`)
+ * takes its ORDER from the hub data, so they cannot disagree with each other.
  */
 export function assertListingAgrees(
   hub: string,
@@ -113,4 +115,14 @@ export function paginationItems(current: number, total: number): PaginationItem[
 export function pageLabelPrefix(label: string, page: number): string {
   const at = label.lastIndexOf(String(page));
   return at === -1 ? `${label} ` : label.slice(0, at);
+}
+
+/**
+ * The words of a page label after its number (`"第3页"` → `"页"`), visually
+ * hidden after the current page's number like {@link pageLabelPrefix}'s words
+ * before it. Empty for an English label and for a label without the number.
+ */
+export function pageLabelSuffix(label: string, page: number): string {
+  const at = label.lastIndexOf(String(page));
+  return at === -1 ? '' : label.slice(at + String(page).length);
 }

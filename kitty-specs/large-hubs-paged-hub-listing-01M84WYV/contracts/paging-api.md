@@ -31,17 +31,52 @@ export type HubCapMap = ReadonlyMap<string, HubCap>;
 /** Most specific first: hub frontmatter `hub_page_size`, section `hub.pageSize`, site `hub.pageSize`, then 50. */
 export function resolveHubPageSize(levels: { hub?: number; section?: number; site?: number }): number;
 
-/** Is this hub paged? `capped && count > pageSize`. */
-export function isPagedHub(hub: Pick<HubCap, 'count' | 'capped' | 'pageSize'>): boolean;
+/** The input of the paging predicates. */
+export type PagedHubInput = Pick<HubCap, 'count' | 'capped' | 'pageSize'>;
 
-/** Number of listing pages: ceil(count / pageSize) when paged, else 1. */
-export function hubPageCount(hub: Pick<HubCap, 'count' | 'capped' | 'pageSize'>): number;
+/**
+ * Is this hub paged? `capped && count > pageSize`. Throws RangeError when
+ * `pageSize` is set but not a positive whole number, whether or not the hub is capped.
+ */
+export function isPagedHub(hub: PagedHubInput): boolean;
 
-/** The children on page `page` (1-based). Throws RangeError outside 1..hubPageCount. */
+/** Number of listing pages: ceil(count / pageSize) when paged, else 1. Throws RangeError as `isPagedHub`. */
+export function hubPageCount(hub: PagedHubInput): number;
+
+/** The children on page `page` (1-based). Throws RangeError outside 1..hubPageCount, or for an invalid `pageSize`. */
 export function hubPageSlice<T>(children: readonly T[], page: number, pageSize: number): T[];
 
 /** Base-free slug of listing page N: the hub itself for 1, `<hub>/page/<N>` otherwise. */
 export function pagedHubSlug(hub: string, page: number): string;
+
+/** One listing page from 2 on. */
+export interface HubListingPage {
+  hub: string;           // the hub folder
+  page: number;          // 2 or more
+  of: number;            // the hub's page count
+  slug: string;          // `<hub>/page/<page>`, base-free
+  children: HubCapChild[]; // the children on this page, in the hub's order
+}
+
+/** Every listing page from 2 on of every paged hub, hubs in code-unit order; the first entry of a repeated hub wins. */
+export function hubListingPages(hubs: HubCapMap | Iterable<readonly [string, HubCap]>): HubListingPage[];
+
+/** A pagination UI-string key. */
+export type HubPaginationKey = (typeof HUB_PAGINATION_KEYS)[keyof typeof HUB_PAGINATION_KEYS];
+
+/** The English defaults of the pagination strings, by key. */
+export const HUB_PAGINATION_STRINGS: Readonly<Record<HubPaginationKey, string>>;
+
+/**
+ * A pagination string: the locale's translation of `key` (Starlight's `locals.t`),
+ * else the English default, with each `{name}` replaced from `vars`. A translation
+ * that drops a placeholder of the English template (`{page}`, `{title}`) is not used.
+ */
+export function resolveHubString(
+  key: HubPaginationKey,
+  vars: Readonly<Record<string, string | number>>,
+  translate?: (key: string) => unknown,
+): string;
 
 /**
  * #429: the hubs the sidebar caps, from data that lists every hub. Keeps the entries

@@ -22,6 +22,11 @@ import { composeHubCards } from '../hub-cards.js';
 import { pageCards } from '../hub-pagination.js';
 import { collectDocEntries } from '../docs-index.js';
 import { hrefOfSlug } from '../with-base.js';
+// The card and pagination styles, imported here and not only through the Hub
+// layout that `kind: 'Hub'` resolves: a theme's own Hub layout may frame this page
+// (decision 4 of ADR-0089), and the cards must stay styled. This route is mounted
+// only on a site with a paged hub, so no other site loads it.
+import '../../styles/hub.css';
 
 export function getStaticPaths() {
   return hubListingPages(routeShaping.hubCaps).map((page) => ({

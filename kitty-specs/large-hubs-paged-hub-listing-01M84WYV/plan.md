@@ -171,3 +171,11 @@ None.
 - **Risks**:
   - The pinned counts move: each paged example page adds one sitemap URL and one agent-index record.
   - The local Chromium differs from CI's (as noted in #426), so CI is authoritative for screenshots.
+
+## Amendments
+
+- **2026-11-25, pagination styles (pre-merge squad).** Where this plan says the
+  pagination's styles go in `hub.css`, the shipped code emits them as one inline
+  `<style is:inline>` in `HubPagination.astro`, only where the pagination renders,
+  so a site without a paged hub builds byte-identical CSS (NFR-005). A strict CSP
+  allows its pinned hash. See ADR-0089 decision 10 and the guide.

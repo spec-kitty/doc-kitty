@@ -13,7 +13,7 @@ import { resolveSectionRegistry, sectionFeeds, feedsSurface, sectionOrder, type 
 import { buildDirectoryMeta, pageRouteSlug, type DirectoryMetaInput } from '../route-shaping.js';
 import { hubListingPages, isChildCap, isPagedHub, resolveChildCap, resolveHubPageSize, type HubCap } from '../child-cap.js';
 import { PAGED_HUB_ROUTE } from './paged-hubs.js';
-import { dropUnbuiltListingAlternates } from '../listing-alternates.js';
+import { builtRoute, dropUnbuiltListingAlternates } from '../listing-alternates.js';
 import { composeHubChildren, selectHubChildren } from '../hub-children.mjs';
 import { loadAdrIdRule } from '../../scripts/generate-adr-index.mjs';
 import { chromeOptions } from '../chrome-options.js';
@@ -355,7 +355,7 @@ export function routeShapingIntegration(
         // keep only the built ones (the operator's Q9 ruling). Only listing pages
         // are read; a site with no paged hub skips this entirely.
         if (listingSlugs.length > 0) {
-          const built = new Set(pages.map((page) => page.pathname.replace(/^\/+|\/+$/g, '')));
+          const built = new Set(pages.map((page) => builtRoute(page.pathname)));
           const outDir = fileURLToPath(dir);
           for (const slug of listingSlugs) {
             const file = [path.join(outDir, slug, 'index.html'), path.join(outDir, `${slug}.html`)].find((f) => existsSync(f));

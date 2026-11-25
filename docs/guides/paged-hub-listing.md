@@ -111,6 +111,12 @@ Each listing page from 2 on:
 The cards are the ones the hub page shows, in the same order: ADR cards first by
 number, then the other pages by section and title.
 
+Page 1 is the hub page itself, so it keeps what every docs page has: Starlight's
+previous and next links at its foot (to its neighbours in the sidebar) and the
+"This page as data" links. The pagination's Previous and Next, above them, move
+between listing pages. The listing pages from 2 on have neither footer: they are
+views of the hub, and their agent-API form is the listing record.
+
 ## The pagination
 
 The pagination is a navigation landmark named "Pagination". It holds Previous,
@@ -211,6 +217,11 @@ locale's link.
 
 A site that writes its own Starlight sidebar is paged the same way. Its sidebar
 stays exactly as written, so it shows no "N pages" entry.
+
+Such a site has no site-wide child cap, so the default cap (50) decides which hubs
+are paged. After upgrading, a hub with more than 50 pages is paged. To keep it on
+one page, raise its cap (`sidebar_child_cap` on the hub, or `sidebar.childCap` on
+its section) or its page size above its page count.
 
 ## Strict Content Security Policy
 

@@ -61,7 +61,9 @@ are for human navigation ease purposes, not as a means to hide content."
    rendered through Starlight's `StarlightPage`, and only when a hub is paged.
    Page 1 is the hub page itself. Each listing page has the hub's title with its
    page, a self canonical, no Starlight previous and next links, and a labelled
-   pagination `<nav>` that ships no script.
+   pagination `<nav>` that ships no script. A listing page is `kind: Hub`, so the
+   site's Hub layout frames it (a theme's own, where it registers one); the route
+   imports the card styles itself, so the cards stay styled under any layout.
 5. **Listing pages appear in every surface but the feeds, each exactly once.**
    The sitemap and
    the search index take them from the built pages. The agent API adds one

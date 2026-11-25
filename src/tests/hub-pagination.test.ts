@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import matter from 'gray-matter';
-import { assertListingAgrees, listingCards, pageCards, pageLabelPrefix, paginationItems, type HubCard } from '../lib/hub-pagination.js';
+import { assertListingAgrees, listingCards, pageCards, pageLabelPrefix, pageLabelSuffix, paginationItems, type HubCard } from '../lib/hub-pagination.js';
 import { composeHubChildren, selectHubChildren } from '../lib/hub-children.mjs';
 import { routeShapingSource } from '../lib/integrations/route-shaping.js';
 import { loadAdrIdRule } from '../scripts/generate-adr-index.mjs';
@@ -118,6 +118,16 @@ describe('the hub page and the hub data list one order (C-001)', () => {
 
     expect(pageOrder).toEqual(['adr/0001-x', 'adr/0002-x', 'adr/0010-x', 'adr/guide', 'adr/notes']);
     expect(dataOrder).toEqual(pageOrder);
+  });
+});
+
+describe('pageLabelSuffix (squad: words after the number)', () => {
+  it('gives the words after the number, so the current page reads the whole label', () => {
+    expect(pageLabelSuffix('Page 3', 3)).toBe('');
+    expect(pageLabelSuffix('第3页', 3)).toBe('页');
+    expect(pageLabelSuffix('3. Seite', 3)).toBe('. Seite');
+    expect(pageLabelSuffix('Page 3 of 4', 3)).toBe(' of 4');
+    expect(pageLabelSuffix('Current page', 3)).toBe('');
   });
 });
 
