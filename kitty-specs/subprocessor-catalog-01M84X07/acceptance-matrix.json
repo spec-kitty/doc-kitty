@@ -2,7 +2,7 @@
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_number": "",
   "mission_type": "software-dev",
-  "overall_verdict": "pending",
+  "overall_verdict": "pass",
   "criteria": [
     {
       "criterion_id": "FR-001",
@@ -169,10 +169,12 @@
       "description": "Verify FR-017 is satisfied",
       "proof_type": "automated_test",
       "evidence": null,
-      "pass_fail": "pending",
-      "verified_by": null,
-      "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "pass_fail": "deferred",
+      "verified_by": "claude::node-norris",
+      "verified_at": "2026-11-25T12:51:11.096009+00:00",
+      "notes": "TODO: replace with a real acceptance criterion",
+      "deferral_reason": "Operator ruling option B (#403 comment 7162823706): the generated list page waits for #455's ADR-0087 source_digest/D3 machinery and must reuse it",
+      "deferral_follow_up": "#461"
     }
   ],
   "negative_invariants": []
