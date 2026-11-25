@@ -1,7 +1,7 @@
 {
-  "event_count": 72,
-  "last_event_id": "01M89TZF6YGX71FT2HJKCWAWXV",
-  "materialized_at": "2026-11-25T17:10:13.982345+00:00",
+  "event_count": 73,
+  "last_event_id": "01M89V3YCZ8KJW3NE9HYN2TDMP",
+  "materialized_at": "2026-11-25T17:12:40.607114+00:00",
   "mission_number": "",
   "mission_slug": "subprocessor-catalog-01M84X07",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 1,
     "claimed": 0,
     "done": 0,
-    "for_review": 4,
+    "for_review": 3,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
@@ -84,13 +84,13 @@
     },
     "WP03": {
       "actor": "claude",
-      "agent": "claude::node-norris",
+      "agent": "claude::reviewer-renata",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "for_review",
-      "last_event_id": "01M89TY1TVKNP7Y3RSXJQ404SM",
-      "last_transition_at": "2026-11-25T17:09:27.515446+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M89V3YCZ8KJW3NE9HYN2TDMP",
+      "last_transition_at": "2026-11-25T17:12:40.607114+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Gate wired to checkSubprocessorCatalog; 7 tests incl. 200-record budget; full pnpm test green",
@@ -105,9 +105,9 @@
         "reviewer": "claude::reviewer-renata",
         "verdict": "approved"
       },
-      "role": "implementer",
-      "shell_pid": 447,
-      "shell_pid_created_at": "1795594472.91",
+      "role": "reviewer",
+      "shell_pid": 579,
+      "shell_pid_created_at": "1795626756.27",
       "subtasks": {
         "T010": "done",
         "T011": "done",
