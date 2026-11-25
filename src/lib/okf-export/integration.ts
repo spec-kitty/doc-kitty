@@ -41,7 +41,7 @@ export function okfExportIntegration(
               '(check build.client and the adapter output).',
           );
         }
-        // The evidence index (#401) is built only on a site with classified pages; its absence is normal.
+        // The evidence index (#401) is built only with `tomAnnex: true` on a site with classified pages; its absence is normal.
         const annexFile = path.join(distDir, 'api', 'tom-annex.json');
         const tomAnnex = existsSync(annexFile) ? readFileSync(annexFile, 'utf8') : undefined;
         const bundle = exportOkfToDisk({

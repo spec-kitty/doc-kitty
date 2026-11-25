@@ -235,7 +235,7 @@ first. When several verdicts apply, the first in this table is reported:
 | `unowned` | the path holds a file not stamped by `doc-kitty-tom-annex` (the verdict [PR #454](https://github.com/spec-kitty/doc-kitty/pull/454) added to ADR-0087 D3) | move or delete that file, then write |
 | `hand-edited` | the file no longer matches its own `content_hash` (for the snapshot, also an `at` its evidence does not give) | move the change to the classified pages or the catalog, then write |
 | `stale-source` | its `source_digest` differs from the build's: an evidence page, the catalog or the configuration changed | write again |
-| `stale-render` | same inputs, different bytes: a toolkit release that renders differently, or a formatting edit to the snapshot (on the hub page, any edit reads as `hand-edited`) | write again |
+| `stale-render` | same inputs, different bytes: a toolkit release that renders differently, a formatting edit to the snapshot, or a hand edit to either file's stamp `by` (any other edit to the hub page reads as `hand-edited`) | write again |
 
 **The check trusts the build.** It compares the committed files with the
 `source_digest` of the `dist` you point it at; it does not recompute the
@@ -255,6 +255,14 @@ nothing to date itself with. A write that names `--hub` then exits `2` and
 writes neither file, because it renders the hub before writing anything; a
 write with only `--snapshot` still succeeds. Give at least one evidence page an
 `updated` date, rebuild, and write again.
+
+**Turning the option off does not remove the committed files.** With
+`tomAnnex: false` the build stops publishing `api/tom-annex.json`, but a
+committed hub page is an ordinary page of the site: it keeps publishing the
+index, its `uncovered` list included, which is the ⚖ concern above. When you
+opt out, delete the hub page, and the snapshot too unless you mean to keep it
+as a record, and remove the `dockitty-tom-annex` check from CI: without the
+option it exits `2`.
 
 **Commit both files with LF line endings**, for example with `eol=lf` for their
 paths in `.gitattributes`. The check compares bytes, so a checkout that turns
