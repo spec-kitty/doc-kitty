@@ -1,0 +1,9 @@
+# Fictional fixture: one catalog reference that does not resolve.
+- id: acme-hosting
+  name: Acme Hosting B.V.
+  processing: Hosting.
+  location: [NL]
+  responsibilities: Acme operates the infrastructure.
+  since: 2025-01-15
+  external_references:
+    - { type: biblio, id: missing-dpa }
