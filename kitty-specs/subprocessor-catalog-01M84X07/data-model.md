@@ -26,9 +26,9 @@ top-level type is an error. An absent file means "no catalog".
 
 | Field | Type | Rule |
 |-------|------|------|
-| `id` | string | The record id |
-| `kind` | `"added"` \| `"removed"` | `added` from `since`, `removed` from `until` |
 | `date` | string | `YYYY-MM-DD` |
+| `kind` | `"added"` \| `"removed"` | `added` from `since`, `removed` from `until` |
+| `id` | string | The record id |
 | `name` | string | The record name, for display |
 
 Order: `date` descending, then `id` ascending, then `added` before `removed`.
