@@ -1,0 +1,125 @@
+{
+  "rows": {
+    "#340": {
+      "evidence_ref": "<auto-classified: no action required>",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<auto-classified: pr_or_commit_ref>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#341": {
+      "evidence_ref": "slice 1, merged in PR #426; referenced only for the locale rule (Q5)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#342": {
+      "evidence_ref": "spec.md Input: the mission's own issue (WP01-WP07)",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "in-mission",
+      "wp": "WP01"
+    },
+    "#343": {
+      "evidence_ref": "spec C-004: out of scope, its own follow-up issue",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#344": {
+      "evidence_ref": "spec C-004: out of scope, its own follow-up issue",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<fill at WP-implementation time>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#359": {
+      "evidence_ref": "research.md R9: named only as the holder of ADR-0087 in the ADR-number allocation; no work here",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "research.md",
+      "title": "ADR-0087 (merged); ADR-number allocation only",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#402": {
+      "evidence_ref": "research.md R9: named only as the holder of ADR-0085 in the ADR-number allocation; no work here",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "research.md",
+      "title": "ADR-0085 (merged); ADR-number allocation only",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#403": {
+      "evidence_ref": "research.md R9: another mission, cited only for ADR numbering",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": null,
+      "title": null,
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#426": {
+      "evidence_ref": "<auto-classified: no action required>",
+      "fr": null,
+      "nfr": null,
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "<auto-classified: pr_or_commit_ref>",
+      "verdict": "not-applicable",
+      "wp": null
+    },
+    "#429": {
+      "evidence_ref": "WP02 (lane-b 28f9a771): routeShapingSource emits every published kind: Hub hub with capped/pageSize in both sidebar modes (src/tests/hub-data-every-hub.test.ts, hub-caps-data.test.ts); the sidebar sees cappedHubCaps only, uncapped golden unchanged. Review cycle 2 (claude::reviewer-renata): APPROVED; FR-016 guard now checks every published routed page under a paged hub, case-insensitively. Carry-over to WP07: document the public export cappedHubCaps (child-cap) in contracts/paging-api.md and the toolkit docs.",
+      "fr": "FR-001, FR-002, FR-017",
+      "nfr": "NFR-003, NFR-005",
+      "repo": null,
+      "sc": null,
+      "scope": null,
+      "source_file": "spec.md",
+      "title": "Hub data for every hub, in every sidebar mode",
+      "verdict": "in-mission",
+      "wp": "WP02"
+    }
+  },
+  "schema_version": 1
+}

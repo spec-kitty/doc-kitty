@@ -1,0 +1,130 @@
+{
+  "entries": [
+    {
+      "created_at": "2026-11-23T19:08:51.415623Z",
+      "decision_id": "01M84WZ7TQDRDPTGT9VA2F9S7F",
+      "final_answer": "Fold in: every kind: Hub hub gets an entry in every sidebar mode, HubCap shape kept with a capped flag; hub page and paged routes read that one resolved data; PR closes #342 and #429",
+      "input_key": "fold_issue_429",
+      "mission_id": "01M84WYVDYWGBH777TED2ZYGC8",
+      "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
+      "opened_by": "cli",
+      "options": [
+        "Fold in: every hub gets an entry with a capped flag; hub page and paged routes read that one resolved data; Closes #429 too",
+        "Do not fold: paged routes compose children from the collection themselves; #429 stays open",
+        "Partial: emit data for over-cap hubs on custom-sidebar sites too, not every hub",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "Fold #429 (widen HubCap route-shaping data to every kind: Hub hub, also on sites with their own sidebar) into this mission?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T21:27:11.607999Z",
+      "resolved_by": null,
+      "slot_key": "specify.scope.fold-429",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-23T21:27:13.551498Z",
+      "decision_id": "01M854WKCFKXRYKQAK0XYRCVZK",
+      "final_answer": "B: separate page-size setting at hub/section/site, default 50, resolved most specific first like the cap; only hubs over their sidebar child cap are paged. Operator decision relayed by the dispatcher (session_01E5wJU9WQgVdyyBRFbVHcGL, verbatim '342 -> B'); to be reconfirmed first-hand in the Intent Summary playback.",
+      "input_key": "page_size",
+      "mission_id": "01M84WYVDYWGBH777TED2ZYGC8",
+      "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
+      "opened_by": "cli",
+      "options": [
+        "Page size = the hub resolved sidebar child cap; only hubs over their cap are paged",
+        "Separate page-size setting (hub/section/site), default 50; only hubs over their cap are paged",
+        "Separate page-size setting; every hub over its page size is paged, regardless of the cap",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "How many children per listing page, and which hubs are paged?",
+      "rationale": null,
+      "resolved_at": "2026-11-23T22:27:39.474455Z",
+      "resolved_by": null,
+      "slot_key": "specify.listing.page-size",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-23T22:27:41.894125Z",
+      "decision_id": "01M858BAP6FM32TPQRB7594R40",
+      "final_answer": "Include paged pages everywhere: sitemap, agent API, llms.txt and Pagefind; each self-canonical; Starlight prev/next may give way to the pagination nav; duplicate-entry handling settled in plan. Operator: 'Include them everywhere, so they are retrievable by api, sitemap, and iterative deepening searches. The hub and sidenav exclusions are for human navigation ease purposes, not as a means to hide content.' Relayed by the dispatcher 2026-11-24. Supersedes #342 AC 'sitemap holds no paged URL'; reconfirm in Intent Summary.",
+      "input_key": "paged_route_exposure",
+      "mission_id": "01M84WYVDYWGBH777TED2ZYGC8",
+      "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
+      "opened_by": "cli",
+      "options": [
+        "Minimal: not in sitemap, agent API, llms.txt or search; prev/next off; self-canonical, indexable by crawlers",
+        "Same but searchable in Pagefind",
+        "Listed in the agent API as navigation pages",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": true,
+      "question": "Where do the paged listing pages (/<hub>/page/N/) appear besides the pagination nav: search index, agent API/llms.txt, sitemap, prev/next?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T13:21:26.737359Z",
+      "resolved_by": null,
+      "slot_key": "specify.surfaces.paged-route-exposure",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T13:21:29.659453Z",
+      "decision_id": "01M86VFXHVM5X10N1WBY36G7JZ",
+      "final_answer": "Fail the build with a clear error naming the hub and the child. Operator answer relayed by the dispatcher 2026-11-24.",
+      "input_key": "page_slug_collision",
+      "mission_id": "01M84WYVDYWGBH777TED2ZYGC8",
+      "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
+      "opened_by": "cli",
+      "options": [
+        "Fail the build naming the hub and the child",
+        "Skip paging that hub with a warning",
+        "Use another segment",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "A hub child whose slug is 'page' collides with /<hub>/page/N/. What happens?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T13:21:32.595579Z",
+      "resolved_by": null,
+      "slot_key": "specify.routes.page-slug-collision",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    },
+    {
+      "created_at": "2026-11-24T13:21:35.409460Z",
+      "decision_id": "01M86VG35H42R2ACQCMZKD6V5P",
+      "final_answer": "Mirror #341: each locale with its own over-cap hub index gets paged routes; fallback pages are not listed; documented as a limit. Operator answer relayed by the dispatcher 2026-11-24.",
+      "input_key": "locale_paging",
+      "mission_id": "01M84WYVDYWGBH777TED2ZYGC8",
+      "mission_slug": "large-hubs-paged-hub-listing-01M84WYV",
+      "opened_by": "cli",
+      "options": [
+        "Mirror #341: each locale with its own over-cap hub index gets paged routes; fallback pages not listed; documented limit",
+        "Default locale only",
+        "Other"
+      ],
+      "origin_flow": "specify",
+      "other_answer": false,
+      "question": "How are multilingual sites paged?",
+      "rationale": null,
+      "resolved_at": "2026-11-24T13:21:38.524199Z",
+      "resolved_by": null,
+      "slot_key": "specify.i18n.locale-paging",
+      "status": "resolved",
+      "step_id": null,
+      "summary_json": null
+    }
+  ],
+  "mission_id": "01M84WYVDYWGBH777TED2ZYGC8",
+  "version": 1
+}
