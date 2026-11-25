@@ -125,7 +125,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "Pure API/feed renderers; 15 tests incl. byte stability; full pnpm test green",
-        "Review cycle 1: TZ byte-stability test added (kills local-midnight pubDate mutant)"
+        "Review cycle 1: TZ byte-stability test added (kills local-midnight pubDate mutant)",
+        "Cycle 2 confirm review of lane-c at 2ecd4e18: F1 resolved. The 'renders the same bytes in another time zone' test is present and passes (16/16 in subprocessors-render.test.ts). The local-midnight mutant (T00:00:00 without Z) fails only that test (1 failed, 15 passed), and the code was restored. The diff from 34e131d2 is the one 6-line test plus status bookkeeping and WP01 review-cycle-2.md from the coordination merge, with no production change. eslint is clean on both owned files. The full toolkit suite was not run (stopped after 10 min). The cycle-1 rejection had reset T014-T017 to planned and they were not re-marked, so the reviewer re-marked them done after verifying their deliverables. F2-F4 stay queued for the spec touch-up."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,
