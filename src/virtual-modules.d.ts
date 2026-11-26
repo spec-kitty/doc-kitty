@@ -28,4 +28,9 @@ declare module 'virtual:doc-kitty/manifest' {
   export const themeSocialImage: import('astro').ImageMetadata | undefined;
   /** The Sidebar carrier's body on a site that opted in (ADR-0075); otherwise `undefined`. */
   export const CustomSidebarBody: import('./lib/manifest.js').LayoutComponent | undefined;
+  /** The print layer on a site that turned it on (ADR-0081); otherwise `undefined`. */
+  export const PrintLayer: import('./lib/manifest.js').LayoutComponent | undefined;
 }
+
+/** The generated print-token fallback sheet (`emitPrintTokenSheet`, #386). CSS only. */
+declare module 'virtual:doc-kitty/print-tokens.css';

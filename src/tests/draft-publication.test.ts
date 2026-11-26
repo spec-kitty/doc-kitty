@@ -12,6 +12,7 @@ import {
   DK_INDEX_BASENAME_ENV,
   DK_DOCS_ROOT_ENV,
   DK_CHROME_OPTIONS_ENV,
+  DK_PDF_OPTIONS_ENV,
   DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV,
   DK_GHERKIN_ROUTE_ENV,
   DK_PUBLISH_DRAFTS_RESOLVED_ENV,
@@ -1267,7 +1268,7 @@ describe('defineDocKittyIntegrations: internal env handoffs across two configs i
       const b = define({});
       // Config B republishes only what it owns at define time; every other owned
       // name is cleared, so a future internal name is covered automatically.
-      const republished = [DK_INDEX_BASENAME_ENV, DK_DOCS_ROOT_ENV, DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV, DK_CHROME_OPTIONS_ENV];
+      const republished = [DK_INDEX_BASENAME_ENV, DK_DOCS_ROOT_ENV, DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV, DK_CHROME_OPTIONS_ENV, DK_PDF_OPTIONS_ENV];
       for (const name of INTERNAL_ENV_NAMES) {
         if (republished.includes(name)) expect(process.env[name], name).toBeDefined();
         else expect(process.env[name], name).toBeUndefined();

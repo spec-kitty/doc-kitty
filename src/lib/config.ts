@@ -62,6 +62,8 @@ import { pageAtomIntegration } from './integrations/page-atom.js';
 import { servedSurfacesIntegration } from './integrations/served-surfaces.js';
 import { sidebarIconsIntegration } from './integrations/sidebar-icons.js';
 import { validateChromeOptions, type ChromeOptionsInput, type ChromeSidebarInput } from './chrome-options.js';
+import { pdfDocumentNames, resolvePdfOptions, resolvePrintLayer, validatePdfOptions, type PdfOptionsInput } from './pdf-options.js';
+import { printRouteIntegrations } from './integrations/print-route.js';
 import { createBuildState } from './build-state.js';
 import type { DocKittyGherkinOption } from './integrations/shared.js';
 import { docKittyManifest, THEME_CSS_MODULE_ID } from './manifest.js';
@@ -102,6 +104,7 @@ import {
 } from './openapi/adapters.js';
 import {
   DK_CHROME_OPTIONS_ENV,
+  DK_PDF_OPTIONS_ENV,
   DK_DOCS_ROOT_ENV,
   DK_EXCLUDE_ENV,
   DK_GHERKIN_RESULTS_ENV,
@@ -448,6 +451,28 @@ export interface DocKittyOptions {
    * `siteDir` is the repo-relative folder of the site, when it is not the repo root.
    */
   repository?: ChromeOptionsInput['repository'];
+  /**
+   * The "Print / Save as PDF" control on every page (ADR-0081, #379): it prints the page
+   * and, when the page's section has a PDF, offers it as a download. Off by default.
+   */
+  printControl?: ChromeOptionsInput['printControl'];
+  /**
+   * Print documents and PDFs (ADR-0081). `sections` is the default for a section that
+   * authors no `pdf` key in `sections.yaml` (an authored value wins); `site` turns on
+   * the whole-site PDF at `/pdf/site.pdf`; `exclude` adds sections and page kinds to
+   * leave out of every print document (slide decks are always left out). All off by
+   * default. Any PDF turns the print layer on.
+   */
+  pdf?: PdfOptionsInput;
+  /**
+   * The page print layer (ADR-0081, #378): print rules that hide the screen chrome and
+   * print on white, and a hook that prints a dark-mode page light. Opt-in: on with
+   * `print: true`, `printControl: true` or any PDF; off otherwise, so a site that sets
+   * none of them builds exactly what it did before. The starter configuration in the
+   * consumer setup guide sets `print: true`, so a new site starts with it.
+   * `print: false` next to a setting that needs the layer is a config error.
+   */
+  print?: boolean;
 }
 
 /**
@@ -644,6 +669,9 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     footer,
     pageFormats,
     repository,
+    printControl,
+    pdf,
+    print,
     starlight: overrides,
   } = options;
   const { starlightSidebar: sidebar, indexLabel, childCap, cappedLabel, chrome: sidebarChrome } =
@@ -652,8 +680,20 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
   // The page-chrome options: validated EAGERLY, so a bad value throws before any hook
   // runs, and published for the carriers and routes, which must not import this
   // module. `chromeOptions()` is the one reader, and it owns the defaults.
-  const chromeInput = validateChromeOptions({ sidebar: sidebarChrome, metadataBlocks, footer, pageFormats, repository });
+  const chromeInput = validateChromeOptions({ sidebar: sidebarChrome, metadataBlocks, footer, pageFormats, repository, printControl });
   setInternalEnv(DK_CHROME_OPTIONS_ENV, JSON.stringify(chromeInput));
+
+  // Print documents and PDFs (ADR-0081): validated eagerly, resolved against the
+  // section registry (an authored section `pdf` wins over the site default), and
+  // published for the print route, the print control, served surfaces and the gates.
+  const pdfInput = pdf === undefined ? undefined : validatePdfOptions(pdf);
+  // The registry is read again here, quietly: the sidebar's own read already printed
+  // any registry warning, including one for an invalid `pdf` value.
+  const resolvedPdf = resolvePdfOptions(pdfInput, resolveSectionRegistry(path.resolve(process.cwd(), docsDir), { warn: () => {} }));
+  setInternalEnv(DK_PDF_OPTIONS_ENV, JSON.stringify(resolvedPdf));
+  // The print layer (ADR-0081): opt-in, resolved eagerly so `print: false` next to the
+  // print control or a PDF throws at config time. Off, it is in no module graph.
+  const printLayer = resolvePrintLayer({ print, printControl, pdfDocuments: pdfDocumentNames(resolvedPdf) });
 
   // PlantUML external-include opt-in (#268): resolved EAGERLY so an invalid value
   // throws at config time. The resolution is always published (sandbox included) so
@@ -1021,12 +1061,22 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // Per-page Atom entries (FR-020): on unless `pageFormats.atom` is false. Before
     // served-surface detection, which reads the injected route.
     ...(pageFormats?.atom === false ? [] : [pageAtomIntegration(title)]),
+    // Print documents (ADR-0081): `/print/<section>/` and `/print/` for the PDFs this
+    // site enabled; nothing at all on a site without PDFs. Before served-surface
+    // detection, like the Atom route.
+    ...printRouteIntegrations({
+      enabled: pdfDocumentNames(resolvedPdf).length > 0,
+      base,
+      docsRoot: path.resolve(process.cwd(), docsDir),
+      siteTitle: title,
+      siteDescription: description,
+    }),
     // Always-on served-surface detection (FR-002): publishes what this site serves,
     // read from its resolved routes, for the agent index and the page chrome. The
     // openapi flag rides along: the renderer's injected routes are invisible to the
     // route walk, so the option says it. Registers no remark/rehype plugin, so no
     // plugin-order pin moves.
-    servedSurfacesIntegration(Boolean(openapiOpts)),
+    servedSurfacesIntegration(Boolean(openapiOpts), pdfDocumentNames(resolvedPdf)),
     // Guarded slide-split remark transform (ADR-0012): a global markdown plugin
     // that only acts on `kind: Presentation` pages and no-ops everywhere else.
     deckSplitIntegration,
@@ -1056,7 +1106,7 @@ export function defineDocKittyIntegrations(options: DocKittyOptions) {
     // carriers as `virtual:doc-kitty/manifest` (synchronous `resolveLayout`, no
     // dynamic import — C-006). Present in EVERY build: `kind-layouts.ts` imports
     // the manifest even on the no-theme path (Hub registered, else Default).
-    docKittyManifest(resolved, buildState),
+    docKittyManifest(resolved, buildState, { printLayer }),
     // Make the theme's package-asset favicon actually servable at the path
     // handed to Starlight above (no-op with no theme favicon, or when the theme
     // points at a `public/` path the consumer already ships).

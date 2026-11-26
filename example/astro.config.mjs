@@ -171,6 +171,9 @@ export default defineConfig({
       ],
       archive: { glob: 'openapi/v1-*.yaml', labelPattern: '(v1-\\d+)', released: true },
     },
+    // Print documents and PDFs (ADR-0081): the whole-site PDF on top of the section
+    // PDFs that sections.yaml enables (architecture, guides).
+    pdf: { site: true },
     gherkin: {
       sources: ['features'],
       section: 'behaviour',

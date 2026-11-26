@@ -66,6 +66,7 @@ sections:
     purpose: >                # optional — one-line summary; the llms.txt blurb fallback (wired)
       How the toolkit is built and why.
     feeds: [sitemap, rss, llms, agent]   # optional — surfaces this section feeds (wired); absent = all four
+    pdf: true                 # optional — the section's own PDF; or { section, site } (ADR-0081)
 ```
 
 | Field | Required | Meaning |
@@ -76,6 +77,7 @@ sections:
 | `type` | no | The section-default frontmatter `type` for pages in this section (**wired**, issue #24). A page's expected `type` is this value (a section `README.md` takes it), refined by the short sub-path subtype table below. Omitting it means the section has no default expectation (the `type` check degrades to a no-op for that section). |
 | `purpose` | no | One-line description. **Wired** as the llms.txt section blurb FALLBACK: the emitted blurb is the section `README` description **??** this `purpose` (README wins). A section with neither gets no blurb line. |
 | `feeds` | no | Which generated surfaces include this section's pages (**wired**). **Omitting it feeds ALL FOUR surfaces** (absent = all). Composes with the per-page publication / `agent` gating — see the semantics below. |
+| `pdf` | no | The section's PDF settings ([ADR-0081](../adr/0081-print-and-pdf-output-from-built-html-via-chromium.md)). `true` or `false` sets whether the section has its own PDF at `/pdf/<id>.pdf`. The mapping `{ section: true\|false, site: main\|appendix\|omit }` also places the section in the whole-site PDF. An absent `section` takes the site default (`pdf.sections` in `defineDocKittyIntegrations`, off by default). An invalid value is an advisory warning, and the site default applies. Both registry readers carry it, so the build, the gates and `dockitty-pdf` agree. See [Printing and PDF](../guides/printing-and-pdf.md). |
 
 `version` marks the schema version so a future change is detectable.
 

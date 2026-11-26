@@ -1,0 +1,52 @@
+---
+/**
+ * The cover of a print document (ADR-0081, #380). The document title is the page's
+ * `<h1>` (the Starlight page title), so the cover holds no heading of its own and no
+ * `h2`/`h3`: the PDF outline's page-title level then lists page titles only. It shows
+ * the site name, the section purpose or site description, the pinned build date and a
+ * table of contents (nested by section in the whole-site document); the index page's
+ * own body follows the cover facts (`slot`).
+ */
+interface Row {
+  anchor: string;
+  title: string;
+  /** Pages under a whole-site section divider; absent for a page row. */
+  pages?: Array<{ anchor: string; title: string }>;
+}
+interface Props {
+  siteTitle: string;
+  summary?: string;
+  buildDate?: string;
+  contents: Row[];
+}
+
+const { siteTitle, summary, buildDate, contents } = Astro.props;
+---
+
+<div class="dk-print-cover">
+  <p class="dk-print-cover__site">{siteTitle}</p>
+  {summary && <p class="dk-print-cover__summary">{summary}</p>}
+  {buildDate && <p class="dk-print-cover__date">Built <time datetime={buildDate}>{buildDate}</time></p>}
+  <slot />
+  <nav class="dk-print-toc" aria-labelledby="dk-print-toc-label">
+    <p class="dk-print-toc__label" id="dk-print-toc-label">Contents</p>
+    <ol>
+      {
+        contents.map((row) => (
+          <li>
+            <a href={`#${row.anchor}`}>{row.title}</a>
+            {row.pages && row.pages.length > 0 && (
+              <ol>
+                {row.pages.map((page) => (
+                  <li>
+                    <a href={`#${page.anchor}`}>{page.title}</a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+</div>

@@ -35,7 +35,13 @@ export const TOOLKIT_PATHS = ['src/index.ts', 'src/lib', 'src/components', 'src/
  */
 export const CHROME_DISTS = {
   'title-as-index': { sidebar: { titleIsIndex: true } },
-  unthemed: { theme: null },
+  // The unthemed dist also carries the print control (#379) and one section PDF
+  // (guides), so the a11y lane checks the control and its download link in both modes.
+  unthemed: {
+    theme: null,
+    printControl: true,
+    pdf: { sections: true, exclude: { sections: ['context', 'reference', 'adr', 'glossary'] } },
+  },
 };
 export const chromeDistPath = (name) => `example/dist-chrome-${name}`;
 

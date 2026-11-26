@@ -21,6 +21,7 @@
  * | DK_PUBLISH_DRAFTS_RESOLVED    | setup      | doc-kitty:draft-publication config:setup | publishDraftsInForce (loader, routes)     |
  * | DK_CHROME_OPTIONS             | define     | defineDocKittyIntegrations               | chromeOptions() (chrome-options.ts)       |
  * | DK_SERVED_SURFACES            | routes     | doc-kitty:served-surfaces routes:resolved | servedSurfaces() (served-surfaces.ts)    |
+ * | DK_PDF_OPTIONS                | define     | defineDocKittyIntegrations               | pdfOptions() (pdf-options.ts): print route, PrintControl |
  *
  * Readers read `process.env` at call time. Vite SSR evaluates the content config
  * and routes in a separate module graph, so module state would arrive empty.
@@ -78,6 +79,14 @@ export const DK_CHROME_OPTIONS_ENV = 'DK_CHROME_OPTIONS';
  */
 export const DK_SERVED_SURFACES_ENV = 'DK_SERVED_SURFACES';
 
+/**
+ * JSON `ResolvedPdfOptions` (`pdf-options.ts`, ADR-0081): which print documents and
+ * PDFs this site has, resolved from `sections.yaml` and the `pdf` option. Read by the
+ * print route, the print control, the served-surfaces record and the gates; never
+ * derived from `dist/pdf/`, which is written after the build.
+ */
+export const DK_PDF_OPTIONS_ENV = 'DK_PDF_OPTIONS';
+
 /** Every internal handoff name. */
 export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_INDEX_BASENAME_ENV,
@@ -91,6 +100,7 @@ export const INTERNAL_ENV_NAMES = Object.freeze([
   DK_PLANTUML_ALLOW_EXTERNAL_RESOLVED_ENV,
   DK_CHROME_OPTIONS_ENV,
   DK_SERVED_SURFACES_ENV,
+  DK_PDF_OPTIONS_ENV,
 ]);
 
 /**

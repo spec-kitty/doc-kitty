@@ -16,6 +16,9 @@ One guide per toolkit release that asks adopters to change something. Each
 lists the steps in order; the [changelog](../../CHANGELOG.md) has the full
 before and after for every entry.
 
+- [Print and PDF output](./print-and-pdf.md): `print: true` turns on the print
+  layer, and the PDF feature reserves `/print/`, `/pdf/` and the `site` name.
+  No setting is needed to upgrade.
 - [Page chrome defaults](./page-chrome-defaults.md): the sidebar and metadata
   blocks start closed, hubs show cards first, and the footer and build gain
   machine-readable links. Two settings restore the old sidebar and blocks.

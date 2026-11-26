@@ -1,0 +1,34 @@
+---
+/**
+ * The "Print / Save as PDF" page control (ADR-0081, #379), rendered by the PageTitle
+ * carrier when a site sets `printControl: true`. The button prints the page (the click
+ * handler lives in `print/print.client.ts`, the print layer, which the control turns on); when
+ * the page's section has its own PDF (from the resolved `pdf` settings, never from the
+ * files in `dist/pdf/`, which are printed after the build), a link offers that PDF.
+ * Without `site` no PDF is printed (the print routes need it), so the link is left out.
+ * Its screen styles sit in `print.css` with the rest of the print layer, and the print
+ * layer hides it on paper. A theme restyles or hides it through `.dk-print-control`.
+ */
+import { pdfOptions } from '../../lib/pdf-options.js';
+import { withBase } from '../../lib/with-base.js';
+
+interface Props {
+  /** The page's docs entry id; its first segment is the section. */
+  entryId: string;
+}
+
+const section = Astro.props.entryId.split('/')[0];
+const pdfHref =
+  import.meta.env.SITE && section && pdfOptions().sections.includes(section) ? withBase(`/pdf/${section}.pdf`) : undefined;
+---
+
+<div class="dk-print-control">
+  <button type="button" class="dk-print-control__print" data-dk-print>Print / Save as PDF</button>
+  {
+    pdfHref && (
+      <a class="dk-print-control__download" href={pdfHref} download>
+        Download section PDF
+      </a>
+    )
+  }
+</div>
